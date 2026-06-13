@@ -1,10 +1,11 @@
 "use client";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Map, {
   Marker,
   Popup,
   NavigationControl,
   GeolocateControl,
+  type GeolocateControlInstance,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { StarRating } from "./StarRating";
@@ -12,7 +13,7 @@ import type { PonchaRating } from "@/lib/supabase";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
-// Madeira center
+// Madeira center – výchozí pohled, než zjistíme polohu uživatele
 const INITIAL_VIEW = { longitude: -16.9, latitude: 32.75, zoom: 10 };
 
 type Props = {
@@ -23,6 +24,7 @@ type Props = {
 
 export function PonchaMap({ ratings, onMapClick, focusedId }: Props) {
   const [popup, setPopup] = useState<PonchaRating | null>(null);
+  const geolocateRef = useRef<GeolocateControlInstance | null>(null);
 
   const handleClick = useCallback(
     (e: { lngLat: { lat: number; lng: number } }) => {
@@ -31,6 +33,12 @@ export function PonchaMap({ ratings, onMapClick, focusedId }: Props) {
     },
     [onMapClick]
   );
+
+  // Po načtení mapy se pokusíme rovnou vycentrovat na polohu uživatele.
+  // Když uživatel polohu nepovolí, prostě zůstane výchozí pohled na Madeiru.
+  const handleLoad = useCallback(() => {
+    geolocateRef.current?.trigger();
+  }, []);
 
   function ratingColor(r: number) {
     if (r >= 4) return "#22c55e";
@@ -45,10 +53,16 @@ export function PonchaMap({ ratings, onMapClick, focusedId }: Props) {
       style={{ width: "100%", height: "100%" }}
       mapStyle="mapbox://styles/mapbox/streets-v12"
       onClick={handleClick}
+      onLoad={handleLoad}
       cursor="crosshair"
     >
       <NavigationControl position="top-right" />
-      <GeolocateControl position="top-right" trackUserLocation />
+      <GeolocateControl
+        ref={geolocateRef}
+        position="top-right"
+        trackUserLocation
+        positionOptions={{ enableHighAccuracy: true }}
+      />
 
       {ratings.map((r) => (
         <Marker

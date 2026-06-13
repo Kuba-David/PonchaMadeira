@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
-import { X, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, MapPin, Loader2 } from "lucide-react";
 import { StarRating } from "./StarRating";
 import { addRating } from "@/lib/ratings";
+import { reverseGeocode } from "@/lib/geocode";
 import type { PonchaRating } from "@/lib/supabase";
 
 const PONCHA_TYPES = [
@@ -31,6 +32,25 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [geoLoading, setGeoLoading] = useState(true);
+
+  // Po otevření zkusíme z mapy automaticky načíst název podniku a adresu
+  useEffect(() => {
+    let active = true;
+    reverseGeocode(lat, lng)
+      .then((res) => {
+        if (!active) return;
+        // Nepřepisujeme, pokud už uživatel mezitím něco napsal
+        if (res.placeName) setPlaceName((prev) => prev || res.placeName);
+        if (res.address) setAddress((prev) => prev || res.address);
+      })
+      .finally(() => {
+        if (active) setGeoLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [lat, lng]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,6 +97,13 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
             <MapPin size={12} />
             {lat.toFixed(5)}, {lng.toFixed(5)}
           </div>
+
+          {geoLoading && (
+            <div className="flex items-center gap-1.5 text-xs text-amber-600">
+              <Loader2 size={12} className="animate-spin" />
+              Načítám místo z mapy…
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
