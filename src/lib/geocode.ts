@@ -33,26 +33,43 @@ async function fetchNearbyPOIName(lat: number, lng: number): Promise<string> {
 
 // Reverse geocoding pro adresu (ulice + čtvrť + město)
 async function fetchAddress(lat: number, lng: number): Promise<string> {
-  // language záměrně vynecháme – adresy na Madeiře jsou v portugalštině
+  // Bez omezení typů – necháme Mapbox vrátit vše a vybereme nejlepší výsledek.
   const url =
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
-    `?access_token=${TOKEN}&types=address,neighborhood,locality,place&limit=5`;
+    `?access_token=${TOKEN}&limit=6`;
 
   const res = await fetch(url);
   if (!res.ok) return "";
 
   const data = await res.json();
-  const features: Array<{ place_name?: string; place_type?: string[] }> =
-    data.features ?? [];
+  const features: Array<{
+    text?: string;
+    place_name?: string;
+    place_type?: string[];
+  }> = data.features ?? [];
 
-  // Preferujeme co nejpřesnější výsledek
+  const byType = (t: string) =>
+    features.find((f) => f.place_type?.includes(t));
+
+  // Od nejpřesnějšího po nejobecnější. POI použijeme taky – jeho place_name
+  // obsahuje plnou adresu.
   const best =
-    features.find((f) => f.place_type?.includes("address")) ??
-    features.find((f) => f.place_type?.includes("neighborhood")) ??
-    features.find((f) => f.place_type?.includes("locality")) ??
+    byType("address") ??
+    byType("poi") ??
+    byType("neighborhood") ??
+    byType("locality") ??
+    byType("place") ??
     features[0];
 
-  const raw = best?.place_name ?? "";
+  if (!best?.place_name) return "";
+
+  let raw = best.place_name;
+
+  // U POI place_name začíná názvem podniku – ten odřízneme, ať zbyde adresa
+  if (best.place_type?.includes("poi") && best.text) {
+    const prefix = `${best.text}, `;
+    if (raw.startsWith(prefix)) raw = raw.slice(prefix.length);
+  }
 
   // Odstraníme PSČ, Madeiru a Portugalsko – zbyde ulice + město
   return raw

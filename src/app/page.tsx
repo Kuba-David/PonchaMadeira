@@ -22,7 +22,9 @@ export default function Home() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [focus, setFocus] = useState<{ id: string; nonce: number } | null>(
+    null
+  );
 
   useEffect(() => {
     getRatings()
@@ -44,7 +46,7 @@ export default function Home() {
   }
 
   function handleCardClick(r: PonchaRating) {
-    setFocusedId(r.id);
+    setFocus((prev) => ({ id: r.id, nonce: (prev?.nonce ?? 0) + 1 }));
     setView("map");
   }
 
@@ -97,25 +99,27 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content – mapa zůstává trvale připojená (kvůli stavu a poloze),
+          seznam ji jen překryje */}
       <main className="flex-1 overflow-hidden relative">
-        {view === "map" && (
-          <div className="absolute inset-0">
-            {!loading && (
-              <PonchaMap
-                ratings={ratings}
-                onMapClick={handleMapClick}
-                focusedId={focusedId}
-              />
-            )}
+        <div className="absolute inset-0">
+          {!loading && (
+            <PonchaMap
+              ratings={ratings}
+              onMapClick={handleMapClick}
+              focusedId={focus?.id ?? null}
+              focusNonce={focus?.nonce ?? 0}
+            />
+          )}
+          {view === "map" && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur text-xs text-gray-500 px-3 py-1.5 rounded-full shadow pointer-events-none">
               Klikni na mapu pro přidání ponchy
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {view === "list" && (
-          <div className="h-full overflow-y-auto p-4 space-y-3">
+          <div className="absolute inset-0 z-10 bg-gray-50 overflow-y-auto p-4 space-y-3">
             {loading && (
               <div className="text-center text-gray-400 py-8">Načítám...</div>
             )}

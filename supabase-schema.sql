@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS poncha_ratings (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   place_name TEXT NOT NULL,
   address TEXT,
-  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 10),
   poncha_type TEXT,
   notes TEXT,
   latitude DOUBLE PRECISION NOT NULL,

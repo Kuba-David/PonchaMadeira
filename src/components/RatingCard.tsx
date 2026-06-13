@@ -48,10 +48,10 @@ export function RatingCard({ rating, onDelete, onClick }: Props) {
         </button>
       </div>
 
-      <div className="mt-2 flex items-center gap-3">
-        <StarRating value={rating.rating} size={16} />
-        <span className="text-xs text-gray-400">
-          {rating.rating}/5
+      <div className="mt-2 flex items-center gap-2">
+        <StarRating value={rating.rating} size={14} max={10} />
+        <span className="text-xs text-gray-400 flex-shrink-0">
+          {rating.rating}/10
         </span>
       </div>
 

@@ -6,16 +6,7 @@ import { addRating } from "@/lib/ratings";
 import { reverseGeocode } from "@/lib/geocode";
 import type { PonchaRating } from "@/lib/supabase";
 
-const PONCHA_TYPES = [
-  "Tradicionální (aguardente + mel + limão)",
-  "Maracujá",
-  "Maracujá s malinami",
-  "Laranja",
-  "Limão",
-  "Morango",
-  "Passionfruit",
-  "Jiné",
-];
+const PONCHA_TYPES = ["Pescador", "Regional", "Maracujá", "Tangerina", "Other"];
 
 type Props = {
   lat: number;
@@ -27,8 +18,8 @@ type Props = {
 export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   const [placeName, setPlaceName] = useState("");
   const [address, setAddress] = useState("");
-  const [rating, setRating] = useState(3);
-  const [ponchaType, setPonchaType] = useState(PONCHA_TYPES[0]);
+  const [rating, setRating] = useState(5);
+  const [ponchaTypes, setPonchaTypes] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -52,6 +43,12 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
     };
   }, [lat, lng]);
 
+  function toggleType(t: string) {
+    setPonchaTypes((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!placeName.trim()) {
@@ -65,7 +62,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         place_name: placeName.trim(),
         address: address.trim() || null,
         rating,
-        poncha_type: ponchaType,
+        poncha_type: ponchaTypes.join(", ") || null,
         notes: notes.trim() || null,
         latitude: lat,
         longitude: lng,
@@ -130,25 +127,36 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Hodnocení
+            <label className="flex items-center justify-between text-sm font-medium text-gray-700 mb-2">
+              <span>Hodnocení</span>
+              <span className="text-amber-600 font-semibold">{rating}/10</span>
             </label>
-            <StarRating value={rating} onChange={setRating} size={32} />
+            <StarRating value={rating} onChange={setRating} size={26} max={10} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Druh ponchy
             </label>
-            <select
-              value={ponchaType}
-              onChange={(e) => setPonchaType(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-            >
-              {PONCHA_TYPES.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
+            <div className="flex flex-wrap gap-2">
+              {PONCHA_TYPES.map((t) => {
+                const active = ponchaTypes.includes(t);
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => toggleType(t)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition ${
+                      active
+                        ? "bg-amber-500 border-amber-500 text-white"
+                        : "bg-white border-gray-200 text-gray-600 hover:border-amber-300"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div>

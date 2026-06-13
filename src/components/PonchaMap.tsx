@@ -1,11 +1,12 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Map, {
   Marker,
   Popup,
   NavigationControl,
   GeolocateControl,
   type GeolocateControlInstance,
+  type MapRef,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { StarRating } from "./StarRating";
@@ -20,11 +21,18 @@ type Props = {
   ratings: PonchaRating[];
   onMapClick: (lat: number, lng: number) => void;
   focusedId?: string | null;
+  focusNonce?: number;
 };
 
-export function PonchaMap({ ratings, onMapClick, focusedId }: Props) {
+export function PonchaMap({
+  ratings,
+  onMapClick,
+  focusedId,
+  focusNonce = 0,
+}: Props) {
   const [popup, setPopup] = useState<PonchaRating | null>(null);
   const geolocateRef = useRef<GeolocateControlInstance | null>(null);
+  const mapRef = useRef<MapRef | null>(null);
 
   const handleClick = useCallback(
     (e: { lngLat: { lat: number; lng: number } }) => {
@@ -40,14 +48,30 @@ export function PonchaMap({ ratings, onMapClick, focusedId }: Props) {
     geolocateRef.current?.trigger();
   }, []);
 
+  // Když uživatel klikne na hodnocení v seznamu, přeletíme na dané místo
+  // a otevřeme jeho popup.
+  useEffect(() => {
+    if (!focusNonce || !focusedId) return;
+    const target = ratings.find((r) => r.id === focusedId);
+    if (!target) return;
+    mapRef.current?.flyTo({
+      center: [target.longitude, target.latitude],
+      zoom: 16,
+      duration: 1200,
+    });
+    setPopup(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusNonce]);
+
   function ratingColor(r: number) {
-    if (r >= 4) return "#22c55e";
-    if (r >= 3) return "#f59e0b";
+    if (r >= 8) return "#22c55e";
+    if (r >= 5) return "#f59e0b";
     return "#ef4444";
   }
 
   return (
     <Map
+      ref={mapRef}
       mapboxAccessToken={MAPBOX_TOKEN}
       initialViewState={INITIAL_VIEW}
       style={{ width: "100%", height: "100%" }}
@@ -102,8 +126,9 @@ export function PonchaMap({ ratings, onMapClick, focusedId }: Props) {
             {popup.poncha_type && (
               <p className="text-xs text-amber-600 mt-0.5">{popup.poncha_type}</p>
             )}
-            <div className="mt-1">
-              <StarRating value={popup.rating} size={14} />
+            <div className="mt-1 flex items-center gap-1.5">
+              <StarRating value={popup.rating} size={12} max={10} />
+              <span className="text-xs text-gray-400">{popup.rating}/10</span>
             </div>
             {popup.notes && (
               <p className="text-xs text-gray-500 mt-1 line-clamp-3">{popup.notes}</p>
