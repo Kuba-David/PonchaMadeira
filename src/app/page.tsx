@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { List, Map as MapIcon, Plus, Wine } from "lucide-react";
+
 import { AddRatingModal } from "@/components/AddRatingModal";
 import { RatingCard } from "@/components/RatingCard";
 import { getRatings } from "@/lib/ratings";
@@ -45,15 +46,14 @@ export default function Home() {
     setRatings((prev) => prev.filter((r) => r.id !== id));
   }
 
+  function handleUpdate(updated: PonchaRating) {
+    setRatings((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+  }
+
   function handleCardClick(r: PonchaRating) {
     setFocus((prev) => ({ id: r.id, nonce: (prev?.nonce ?? 0) + 1 }));
     setView("map");
   }
-
-  const avgRating =
-    ratings.length > 0
-      ? (ratings.reduce((s, r) => s + r.rating, 0) / ratings.length).toFixed(1)
-      : null;
 
   return (
     <div className="flex flex-col h-dvh bg-gray-50">
@@ -63,14 +63,7 @@ export default function Home() {
           <Wine size={22} />
           <span className="font-bold text-lg tracking-tight">Poncha Madeira</span>
         </div>
-        <div className="flex items-center gap-3 text-sm">
-          {avgRating && (
-            <span className="bg-white/20 rounded-full px-2.5 py-0.5 font-semibold">
-              ★ {avgRating}
-            </span>
-          )}
-          <span className="text-white/70">{ratings.length} míst</span>
-        </div>
+        <span className="text-white/70 text-sm">{ratings.length} míst</span>
       </header>
 
       {/* View toggle */}
@@ -137,6 +130,7 @@ export default function Home() {
                 key={r.id}
                 rating={r}
                 onDelete={handleDelete}
+                onUpdate={handleUpdate}
                 onClick={() => handleCardClick(r)}
               />
             ))}

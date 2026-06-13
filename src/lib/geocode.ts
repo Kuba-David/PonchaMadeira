@@ -5,79 +5,99 @@ export type GeocodeResult = {
 
 const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-// Tilequery API vrací přímo data z mapových vrstev – spolehlivější pro POI.
+// Tilequery queries rendered map tiles directly – works even when a POI
+// is not in Mapbox's search index.
 async function fetchNearbyPOIName(lat: number, lng: number): Promise<string> {
   const url =
     `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/tilequery/${lng},${lat}.json` +
     `?radius=80&limit=10&access_token=${TOKEN}`;
-
-  const res = await fetch(url);
-  if (!res.ok) return "";
-
-  const data = await res.json();
-  const features: Array<{
-    properties?: {
-      name?: string;
-      tilequery?: { layer?: string };
-    };
-  }> = data.features ?? [];
-
-  // poi_label vrstva = bary, restaurace, kavárny, obchody ...
-  const poi = features.find(
-    (f) =>
-      f.properties?.tilequery?.layer === "poi_label" && f.properties?.name
-  );
-
-  return poi?.properties?.name ?? "";
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return "";
+    const data = await res.json();
+    const poi = (data.features ?? []).find(
+      (f: { properties?: { name?: string; tilequery?: { layer?: string } } }) =>
+        f.properties?.tilequery?.layer === "poi_label" && f.properties?.name
+    );
+    return poi?.properties?.name ?? "";
+  } catch {
+    return "";
+  }
 }
 
-// Reverse geocoding pro adresu (ulice + čtvrť + město)
+type V6Context = {
+  address?: { street_name?: string; address_number?: string; name?: string };
+  street?: { name?: string };
+  neighborhood?: { name?: string };
+  place?: { name?: string };
+};
+
+type V6Feature = {
+  properties?: {
+    feature_type?: string;
+    name?: string;
+    full_address?: string;
+    context?: V6Context;
+  };
+};
+
+// Geocoding v6 returns clean structured fields – no postal-code regex needed.
 async function fetchAddress(lat: number, lng: number): Promise<string> {
-  // Bez omezení typů – necháme Mapbox vrátit vše a vybereme nejlepší výsledek.
   const url =
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
-    `?access_token=${TOKEN}&limit=6`;
+    `https://api.mapbox.com/search/geocode/v6/reverse` +
+    `?longitude=${lng}&latitude=${lat}` +
+    `&types=address,street,neighborhood,locality,place` +
+    `&limit=5&access_token=${TOKEN}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return "";
+    const data = await res.json();
+    const features: V6Feature[] = data.features ?? [];
 
-  const res = await fetch(url);
-  if (!res.ok) return "";
+    const byType = (t: string) =>
+      features.find((f) => f.properties?.feature_type === t);
 
-  const data = await res.json();
-  const features: Array<{
-    text?: string;
-    place_name?: string;
-    place_type?: string[];
-  }> = data.features ?? [];
+    const best =
+      byType("address") ??
+      byType("street") ??
+      byType("neighborhood") ??
+      byType("locality") ??
+      byType("place") ??
+      features[0];
 
-  const byType = (t: string) =>
-    features.find((f) => f.place_type?.includes(t));
+    if (!best?.properties) return "";
 
-  // Od nejpřesnějšího po nejobecnější. POI použijeme taky – jeho place_name
-  // obsahuje plnou adresu.
-  const best =
-    byType("address") ??
-    byType("poi") ??
-    byType("neighborhood") ??
-    byType("locality") ??
-    byType("place") ??
-    features[0];
+    const ctx = best.properties.context ?? {};
+    const city = ctx.place?.name ?? "";
 
-  if (!best?.place_name) return "";
+    // Build address from structured context: "Rua do Bom Jesus 45, Funchal"
+    if (ctx.address) {
+      const street = ctx.address.street_name ?? ctx.address.name ?? "";
+      const number = ctx.address.address_number ?? "";
+      const streetFull = number ? `${street} ${number}`.trim() : street;
+      return [streetFull, city].filter(Boolean).join(", ");
+    }
 
-  let raw = best.place_name;
+    if (ctx.street?.name) {
+      return [ctx.street.name, city].filter(Boolean).join(", ");
+    }
 
-  // U POI place_name začíná názvem podniku – ten odřízneme, ať zbyde adresa
-  if (best.place_type?.includes("poi") && best.text) {
-    const prefix = `${best.text}, `;
-    if (raw.startsWith(prefix)) raw = raw.slice(prefix.length);
+    if (ctx.neighborhood?.name) {
+      return [ctx.neighborhood.name, city].filter(Boolean).join(", ");
+    }
+
+    if (city) return city;
+
+    // Last resort: strip country/region from full_address
+    return (best.properties.full_address ?? best.properties.name ?? "")
+      .replace(/,\s*\d{4}-\d{3}\s*/g, ", ")
+      .replace(/,\s*Madeira\s*,\s*Portugal\s*$/i, "")
+      .replace(/,\s*Portugal\s*$/i, "")
+      .replace(/,\s*Madeira\s*$/i, "")
+      .trim();
+  } catch {
+    return "";
   }
-
-  // Odstraníme PSČ, Madeiru a Portugalsko – zbyde ulice + město
-  return raw
-    .replace(/,\s*\d{4}-\d{3}/g, "")
-    .replace(/,\s*Madeira\s*,\s*Portugal\s*$/i, "")
-    .replace(/,\s*Portugal\s*$/i, "")
-    .replace(/,\s*Madeira\s*$/i, "")
-    .trim();
 }
 
 export async function reverseGeocode(
@@ -85,7 +105,6 @@ export async function reverseGeocode(
   lng: number
 ): Promise<GeocodeResult> {
   if (!TOKEN) return { placeName: "", address: "" };
-
   try {
     const [placeName, address] = await Promise.all([
       fetchNearbyPOIName(lat, lng),
