@@ -31,11 +31,12 @@ async function fetchNearbyPOIName(lat: number, lng: number): Promise<string> {
   return poi?.properties?.name ?? "";
 }
 
-// Reverse geocoding pro adresu (ulice + město)
+// Reverse geocoding pro adresu (ulice + čtvrť + město)
 async function fetchAddress(lat: number, lng: number): Promise<string> {
+  // language záměrně vynecháme – adresy na Madeiře jsou v portugalštině
   const url =
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
-    `?access_token=${TOKEN}&language=cs&types=address,place&limit=3`;
+    `?access_token=${TOKEN}&types=address,neighborhood,locality,place&limit=5`;
 
   const res = await fetch(url);
   if (!res.ok) return "";
@@ -44,10 +45,22 @@ async function fetchAddress(lat: number, lng: number): Promise<string> {
   const features: Array<{ place_name?: string; place_type?: string[] }> =
     data.features ?? [];
 
-  const addr = features.find((f) => f.place_type?.includes("address"));
-  const raw = addr?.place_name ?? features[0]?.place_name ?? "";
+  // Preferujeme co nejpřesnější výsledek
+  const best =
+    features.find((f) => f.place_type?.includes("address")) ??
+    features.find((f) => f.place_type?.includes("neighborhood")) ??
+    features.find((f) => f.place_type?.includes("locality")) ??
+    features[0];
 
-  return raw.replace(/,\s*Portug[a-z]+\s*$/i, "").trim();
+  const raw = best?.place_name ?? "";
+
+  // Odstraníme PSČ, Madeiru a Portugalsko – zbyde ulice + město
+  return raw
+    .replace(/,\s*\d{4}-\d{3}/g, "")
+    .replace(/,\s*Madeira\s*,\s*Portugal\s*$/i, "")
+    .replace(/,\s*Portugal\s*$/i, "")
+    .replace(/,\s*Madeira\s*$/i, "")
+    .trim();
 }
 
 export async function reverseGeocode(
