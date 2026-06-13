@@ -25,76 +25,62 @@ async function fetchNearbyPOIName(lat: number, lng: number): Promise<string> {
   }
 }
 
-type V6Context = {
-  address?: { street_name?: string; address_number?: string; name?: string };
-  street?: { name?: string };
-  neighborhood?: { name?: string };
-  place?: { name?: string };
+type ContextEntry = { id?: string; text?: string };
+
+type GeoFeature = {
+  text?: string;
+  address?: string; // house number (v5 address features only)
+  place_type?: string[];
+  context?: ContextEntry[];
 };
 
-type V6Feature = {
-  properties?: {
-    feature_type?: string;
-    name?: string;
-    full_address?: string;
-    context?: V6Context;
-  };
-};
+function ctxText(ctx: ContextEntry[] | undefined, prefix: string): string {
+  return ctx?.find((c) => c.id?.startsWith(prefix + "."))?.text ?? "";
+}
 
-// Geocoding v6 returns clean structured fields – no postal-code regex needed.
 async function fetchAddress(lat: number, lng: number): Promise<string> {
+  // v5 reverse geocoding without type filter – get the full feature hierarchy.
   const url =
-    `https://api.mapbox.com/search/geocode/v6/reverse` +
-    `?longitude=${lng}&latitude=${lat}` +
-    `&types=address,street,neighborhood,locality,place` +
-    `&limit=5&access_token=${TOKEN}`;
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
+    `?access_token=${TOKEN}&limit=8`;
   try {
     const res = await fetch(url);
     if (!res.ok) return "";
-    const data = await res.json();
-    const features: V6Feature[] = data.features ?? [];
+    const features: GeoFeature[] = (await res.json()).features ?? [];
 
-    const byType = (t: string) =>
-      features.find((f) => f.properties?.feature_type === t);
+    const byType = (t: string) => features.find((f) => f.place_type?.includes(t));
 
-    const best =
-      byType("address") ??
-      byType("street") ??
-      byType("neighborhood") ??
-      byType("locality") ??
-      byType("place") ??
-      features[0];
-
-    if (!best?.properties) return "";
-
-    const ctx = best.properties.context ?? {};
-    const city = ctx.place?.name ?? "";
-
-    // Build address from structured context: "Rua do Bom Jesus 45, Funchal"
-    if (ctx.address) {
-      const street = ctx.address.street_name ?? ctx.address.name ?? "";
-      const number = ctx.address.address_number ?? "";
-      const streetFull = number ? `${street} ${number}`.trim() : street;
-      return [streetFull, city].filter(Boolean).join(", ");
+    // ── address feature: text = street name, address = house number ──
+    const addr = byType("address");
+    if (addr) {
+      const street = addr.address
+        ? `${addr.text ?? ""} ${addr.address}`.trim()
+        : (addr.text ?? "");
+      const city = ctxText(addr.context, "place");
+      if (street) return [street, city].filter(Boolean).join(", ");
     }
 
-    if (ctx.street?.name) {
-      return [ctx.street.name, city].filter(Boolean).join(", ");
+    // ── POI feature: pick street/neighbourhood + city from context ──
+    const poi = byType("poi");
+    if (poi) {
+      const street =
+        ctxText(poi.context, "address") ||
+        ctxText(poi.context, "neighborhood") ||
+        ctxText(poi.context, "locality");
+      const city = ctxText(poi.context, "place");
+      if (street || city) return [street, city].filter(Boolean).join(", ");
     }
 
-    if (ctx.neighborhood?.name) {
-      return [ctx.neighborhood.name, city].filter(Boolean).join(", ");
+    // ── coarser fallbacks ──
+    for (const type of ["neighborhood", "locality", "place"]) {
+      const f = byType(type);
+      if (f?.text) {
+        const city = ctxText(f.context, "place");
+        return city && city !== f.text ? `${f.text}, ${city}` : f.text;
+      }
     }
 
-    if (city) return city;
-
-    // Last resort: strip country/region from full_address
-    return (best.properties.full_address ?? best.properties.name ?? "")
-      .replace(/,\s*\d{4}-\d{3}\s*/g, ", ")
-      .replace(/,\s*Madeira\s*,\s*Portugal\s*$/i, "")
-      .replace(/,\s*Portugal\s*$/i, "")
-      .replace(/,\s*Madeira\s*$/i, "")
-      .trim();
+    return "";
   } catch {
     return "";
   }
