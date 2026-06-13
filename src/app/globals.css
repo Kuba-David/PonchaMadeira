@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+body {
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
+}
+
+/* Mapbox popup reset */
+.mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+}
+
+.mapboxgl-popup-close-button {
+  font-size: 16px;
+  padding: 4px 8px;
+  color: #6b7280;
+}
