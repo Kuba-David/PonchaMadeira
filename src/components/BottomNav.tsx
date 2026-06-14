@@ -1,25 +1,16 @@
 "use client";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 
 type View = "map" | "list";
 
 type Props = {
   view: View;
   onViewChange: (v: View) => void;
-  onSearch?: () => void;
   onFilter?: () => void;
-  searchActive?: boolean;
   filterActive?: boolean;
 };
 
-export function BottomNav({
-  view,
-  onViewChange,
-  onSearch,
-  onFilter,
-  searchActive,
-  filterActive,
-}: Props) {
+export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props) {
   return (
     <div className="flex items-center gap-2 bg-cream/95 backdrop-blur border border-sanddark rounded-full p-1 shadow-lg">
       <button
@@ -37,15 +28,6 @@ export function BottomNav({
         }`}
       >
         Seznam
-      </button>
-      <button
-        onClick={onSearch}
-        aria-label="Hledat"
-        className={`size-9 rounded-full flex items-center justify-center transition ${
-          searchActive ? "text-brand" : "text-inksoft hover:text-brand"
-        }`}
-      >
-        <Search size={18} />
       </button>
       <button
         onClick={onFilter}

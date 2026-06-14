@@ -20,7 +20,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   const [address, setAddress] = useState("");
   const [rating, setRating] = useState(8);
   const [ponchaTypes, setPonchaTypes] = useState<string[]>([]);
-  const [balance, setBalance] = useState<string | null>(null);
+  const [taste, setTaste] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -48,6 +48,12 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
     );
   }
 
+  function toggleTaste(t: string) {
+    setTaste((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!placeName.trim()) {
@@ -62,7 +68,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         address: address.trim() || null,
         rating,
         poncha_type: ponchaTypes.join(", ") || null,
-        balance,
+        balance: taste.join(", ") || null,
         notes: notes.trim() || null,
         latitude: lat,
         longitude: lng,
@@ -104,15 +110,15 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Vyváženost">
+        <Section label="Chuť">
           <div className="flex flex-wrap gap-2">
             {BALANCE_OPTIONS.map((b) => (
               <Chip
                 key={b}
                 label={b}
                 color="green"
-                active={balance === b}
-                onClick={() => setBalance((prev) => (prev === b ? null : b))}
+                active={taste.includes(b)}
+                onClick={() => toggleTaste(b)}
               />
             ))}
           </div>

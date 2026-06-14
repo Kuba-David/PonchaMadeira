@@ -20,13 +20,21 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
   const [ponchaTypes, setPonchaTypes] = useState<string[]>(
     rating.poncha_type ? rating.poncha_type.split(", ").filter(Boolean) : []
   );
-  const [balance, setBalance] = useState<string | null>(rating.balance);
+  const [taste, setTaste] = useState<string[]>(
+    rating.balance ? rating.balance.split(", ").filter(Boolean) : []
+  );
   const [notes, setNotes] = useState(rating.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   function toggleType(t: string) {
     setPonchaTypes((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    );
+  }
+
+  function toggleTaste(t: string) {
+    setTaste((prev) =>
       prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
     );
   }
@@ -45,7 +53,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
         address: address.trim() || null,
         rating: score,
         poncha_type: ponchaTypes.join(", ") || null,
-        balance,
+        balance: taste.join(", ") || null,
         notes: notes.trim() || null,
       });
       onSaved(saved);
@@ -84,15 +92,15 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Vyváženost">
+        <Section label="Chuť">
           <div className="flex flex-wrap gap-2">
             {BALANCE_OPTIONS.map((b) => (
               <Chip
                 key={b}
                 label={b}
                 color="green"
-                active={balance === b}
-                onClick={() => setBalance((prev) => (prev === b ? null : b))}
+                active={taste.includes(b)}
+                onClick={() => toggleTaste(b)}
               />
             ))}
           </div>

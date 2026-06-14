@@ -1,13 +1,12 @@
 "use client";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { WineOff } from "lucide-react";
+import { WineOff, Search, X } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNav } from "@/components/BottomNav";
 import { AddRatingModal } from "@/components/AddRatingModal";
 import { EditRatingModal } from "@/components/EditRatingModal";
 import { DetailRatingModal } from "@/components/DetailRatingModal";
-import { SearchSheet } from "@/components/SearchSheet";
 import { FilterSheet } from "@/components/FilterSheet";
 import { RatingCard } from "@/components/RatingCard";
 import { ReviewPreviewCard } from "@/components/ReviewPreviewCard";
@@ -21,6 +20,18 @@ const PonchaMap = dynamic(
 
 type View = "map" | "list";
 
+function matchesFilter(r: PonchaRating, types: string[], balance: string[]): boolean {
+  if (types.length > 0) {
+    const rTypes = r.poncha_type?.split(", ").filter(Boolean) ?? [];
+    if (!types.some((t) => rTypes.includes(t))) return false;
+  }
+  if (balance.length > 0) {
+    const rTastes = r.balance?.split(", ").filter(Boolean) ?? [];
+    if (!balance.some((b) => rTastes.includes(b))) return false;
+  }
+  return true;
+}
+
 export default function Home() {
   const [view, setView] = useState<View>("map");
   const [ratings, setRatings] = useState<PonchaRating[]>([]);
@@ -31,32 +42,29 @@ export default function Home() {
   const [detail, setDetail] = useState<PonchaRating | null>(null);
   const [editing, setEditing] = useState<PonchaRating | null>(null);
 
-  // search & filter state
-  const [showSearch, setShowSearch] = useState(false);
+  // filtr (mapa + seznam) a hledání (jen seznam)
   const [showFilter, setShowFilter] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [filterBalance, setFilterBalance] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredRatings = useMemo(() => {
-    return ratings.filter((r) => {
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        if (
-          !r.place_name.toLowerCase().includes(q) &&
-          !r.address?.toLowerCase().includes(q)
-        )
-          return false;
-      }
-      if (filterTypes.length > 0) {
-        const rTypes = r.poncha_type?.split(", ").filter(Boolean) ?? [];
-        if (!filterTypes.some((t) => rTypes.includes(t))) return false;
-      }
-      if (filterBalance.length > 0 && !filterBalance.includes(r.balance ?? ""))
-        return false;
-      return true;
+  // mapa: jen filtr typ/chuť
+  const mapRatings = useMemo(
+    () => ratings.filter((r) => matchesFilter(r, filterTypes, filterBalance)),
+    [ratings, filterTypes, filterBalance]
+  );
+
+  // seznam: filtr + textové hledání
+  const listRatings = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return mapRatings.filter((r) => {
+      if (!q) return true;
+      return (
+        r.place_name.toLowerCase().includes(q) ||
+        (r.address?.toLowerCase().includes(q) ?? false)
+      );
     });
-  }, [ratings, searchQuery, filterTypes, filterBalance]);
+  }, [mapRatings, searchQuery]);
 
   useEffect(() => {
     getRatings()
@@ -96,13 +104,6 @@ export default function Home() {
     setView("map");
   }
 
-  function handleSearchSelect(r: PonchaRating) {
-    setFocus((prev) => ({ id: r.id, nonce: (prev?.nonce ?? 0) + 1 }));
-    setSelected(r);
-    setView("map");
-  }
-
-  const searchActive = searchQuery.trim().length > 0;
   const filterActive = filterTypes.length > 0 || filterBalance.length > 0;
 
   return (
@@ -112,7 +113,7 @@ export default function Home() {
         <div className="absolute inset-0">
           {!loading && (
             <PonchaMap
-              ratings={filteredRatings}
+              ratings={mapRatings}
               onMapClick={handleMapClick}
               onPinClick={handlePinClick}
               selectedId={selected?.id}
@@ -125,13 +126,33 @@ export default function Home() {
         {/* Seznam jako překryv */}
         {view === "list" && (
           <div className="absolute inset-0 z-10 bg-sand overflow-y-auto px-4 pt-20 pb-28">
+            {/* Vyhledávací pole */}
+            <div className="flex items-center gap-3 bg-white border border-sanddark rounded-xl h-12 px-4 mb-5">
+              <Search size={18} className="text-inksoft shrink-0" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Hledat podniky..."
+                className="flex-1 text-[15px] text-ink placeholder:text-inksoft/60 bg-transparent focus:outline-none"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Vymazat"
+                  className="text-inksoft hover:text-ink transition"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
             <h2 className="font-display font-bold text-xl text-ink mb-4 px-1">
               Ohodnocené podniky
             </h2>
             {loading && (
               <div className="text-center text-inksoft/60 py-8">Načítám...</div>
             )}
-            {!loading && filteredRatings.length === 0 && (
+            {!loading && listRatings.length === 0 && (
               <div className="text-center py-16">
                 <WineOff size={40} className="mx-auto text-brand/40 mb-3" />
                 {ratings.length === 0 ? (
@@ -152,7 +173,7 @@ export default function Home() {
               </div>
             )}
             <div className="space-y-3">
-              {filteredRatings.map((r) => (
+              {listRatings.map((r) => (
                 <RatingCard
                   key={r.id}
                   rating={r}
@@ -186,9 +207,7 @@ export default function Home() {
           <BottomNav
             view={view}
             onViewChange={setView}
-            onSearch={() => setShowSearch(true)}
             onFilter={() => setShowFilter(true)}
-            searchActive={searchActive}
             filterActive={filterActive}
           />
         </div>
@@ -222,16 +241,6 @@ export default function Home() {
             handleUpdate(r);
             setEditing(null);
           }}
-        />
-      )}
-
-      {showSearch && (
-        <SearchSheet
-          ratings={ratings}
-          initialQuery={searchQuery}
-          onClose={() => setShowSearch(false)}
-          onSelect={handleSearchSelect}
-          onSearch={setSearchQuery}
         />
       )}
 

@@ -19,7 +19,10 @@ function matchCount(ratings: PonchaRating[], types: string[], balance: string[])
       const rTypes = r.poncha_type?.split(", ").filter(Boolean) ?? [];
       if (!types.some((t) => rTypes.includes(t))) return false;
     }
-    if (balance.length > 0 && !balance.includes(r.balance ?? "")) return false;
+    if (balance.length > 0) {
+      const rTastes = r.balance?.split(", ").filter(Boolean) ?? [];
+      if (!balance.some((b) => rTastes.includes(b))) return false;
+    }
     return true;
   }).length;
 }
@@ -82,7 +85,7 @@ export function FilterSheet({
           </div>
         </Section>
 
-        <Section label="Vyváženost">
+        <Section label="Chuť">
           <div className="flex flex-wrap gap-2">
             {BALANCE_OPTIONS.map((b) => (
               <Chip

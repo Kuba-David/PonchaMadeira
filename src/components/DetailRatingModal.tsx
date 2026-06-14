@@ -2,8 +2,6 @@
 import { MapPin, Pencil } from "lucide-react";
 import { RatingSheet, Section } from "./AddRatingModal";
 import { RatingBadge } from "./RatingBadge";
-import { Chip } from "./Chip";
-import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
 
 type Props = {
@@ -15,6 +13,9 @@ type Props = {
 export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
   const ponchaTypes = rating.poncha_type
     ? rating.poncha_type.split(", ").filter(Boolean)
+    : [];
+  const tastes = rating.balance
+    ? rating.balance.split(", ").filter(Boolean)
     : [];
 
   return (
@@ -52,31 +53,28 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
         {ponchaTypes.length > 0 && (
           <Section label="Typ ponchy">
             <div className="flex flex-wrap gap-2">
-              {PONCHA_TYPES.map((t) => (
-                <Chip
+              {ponchaTypes.map((t) => (
+                <span
                   key={t}
-                  label={t}
-                  active={ponchaTypes.includes(t)}
-                  onClick={() => {}}
-                  disabled
-                />
+                  className="px-4 py-2.5 rounded-full text-sm font-semibold bg-brand text-white"
+                >
+                  {t}
+                </span>
               ))}
             </div>
           </Section>
         )}
 
-        {rating.balance && (
-          <Section label="Vyváženost">
+        {tastes.length > 0 && (
+          <Section label="Chuť">
             <div className="flex flex-wrap gap-2">
-              {BALANCE_OPTIONS.map((b) => (
-                <Chip
-                  key={b}
-                  label={b}
-                  color="green"
-                  active={rating.balance === b}
-                  onClick={() => {}}
-                  disabled
-                />
+              {tastes.map((t) => (
+                <span
+                  key={t}
+                  className="px-4 py-2.5 rounded-full text-sm font-semibold bg-pingreen text-white"
+                >
+                  {t}
+                </span>
               ))}
             </div>
           </Section>
@@ -89,7 +87,6 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
             </p>
           </Section>
         )}
-
       </div>
     </RatingSheet>
   );
