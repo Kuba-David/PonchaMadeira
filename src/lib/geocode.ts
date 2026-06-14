@@ -25,62 +25,64 @@ async function fetchNearbyPOIName(lat: number, lng: number): Promise<string> {
   }
 }
 
-type ContextEntry = { id?: string; text?: string };
-
 type GeoFeature = {
   text?: string;
-  address?: string; // house number (v5 address features only)
+  place_name?: string;
   place_type?: string[];
-  context?: ContextEntry[];
 };
 
-function ctxText(ctx: ContextEntry[] | undefined, prefix: string): string {
-  return ctx?.find((c) => c.id?.startsWith(prefix + "."))?.text ?? "";
+// Vyčistí place_name: rozdělí podle čárek a odstraní zemi, kraj a PSČ.
+function cleanAddress(placeName: string, poiText?: string): string {
+  let raw = placeName;
+
+  // Pokud řetězec začíná názvem podniku, odřízneme ho (ať se neduplikuje)
+  if (poiText && raw.startsWith(poiText + ",")) {
+    raw = raw.slice(poiText.length + 1);
+  }
+
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .filter(
+      (p) =>
+        !/^portugal$/i.test(p) &&
+        !/^madeira$/i.test(p) &&
+        !/^\d{4}-\d{3}$/.test(p) // samostatné PSČ
+    )
+    // PSČ uvnitř segmentu ("9370-133 Calheta" → "Calheta")
+    .map((p) => p.replace(/\b\d{4}-\d{3}\b/g, "").trim())
+    .filter(Boolean)
+    .join(", ");
 }
 
 async function fetchAddress(lat: number, lng: number): Promise<string> {
-  // v5 reverse geocoding without type filter – get the full feature hierarchy.
   const url =
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
-    `?access_token=${TOKEN}&limit=8`;
+    `?access_token=${TOKEN}&limit=6`;
   try {
     const res = await fetch(url);
     if (!res.ok) return "";
     const features: GeoFeature[] = (await res.json()).features ?? [];
+    if (features.length === 0) return "";
 
-    const byType = (t: string) => features.find((f) => f.place_type?.includes(t));
+    const byType = (t: string) =>
+      features.find((f) => f.place_type?.includes(t));
 
-    // ── address feature: text = street name, address = house number ──
-    const addr = byType("address");
-    if (addr) {
-      const street = addr.address
-        ? `${addr.text ?? ""} ${addr.address}`.trim()
-        : (addr.text ?? "");
-      const city = ctxText(addr.context, "place");
-      if (street) return [street, city].filter(Boolean).join(", ");
-    }
+    // Od nejpřesnějšího po nejobecnější. U POI použijeme jeho place_name,
+    // jen z něj seškrtneme úvodní název podniku.
+    const chosen =
+      byType("address") ??
+      byType("poi") ??
+      byType("neighborhood") ??
+      byType("locality") ??
+      byType("place") ??
+      features[0];
 
-    // ── POI feature: pick street/neighbourhood + city from context ──
-    const poi = byType("poi");
-    if (poi) {
-      const street =
-        ctxText(poi.context, "address") ||
-        ctxText(poi.context, "neighborhood") ||
-        ctxText(poi.context, "locality");
-      const city = ctxText(poi.context, "place");
-      if (street || city) return [street, city].filter(Boolean).join(", ");
-    }
+    if (!chosen.place_name) return "";
 
-    // ── coarser fallbacks ──
-    for (const type of ["neighborhood", "locality", "place"]) {
-      const f = byType(type);
-      if (f?.text) {
-        const city = ctxText(f.context, "place");
-        return city && city !== f.text ? `${f.text}, ${city}` : f.text;
-      }
-    }
-
-    return "";
+    const poiText = chosen.place_type?.includes("poi") ? chosen.text : undefined;
+    return cleanAddress(chosen.place_name, poiText);
   } catch {
     return "";
   }
