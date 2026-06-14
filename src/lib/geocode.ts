@@ -59,7 +59,7 @@ function cleanAddress(placeName: string, poiText?: string): string {
 async function fetchAddress(lat: number, lng: number): Promise<string> {
   const url =
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
-    `?access_token=${TOKEN}&limit=6`;
+    `?access_token=${TOKEN}`;
   try {
     const res = await fetch(url);
     if (!res.ok) return "";
