@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { List, Map as MapIcon, Plus, Wine } from "lucide-react";
-
+import { WineOff } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
+import { BottomNav } from "@/components/BottomNav";
 import { AddRatingModal } from "@/components/AddRatingModal";
+import { EditRatingModal } from "@/components/EditRatingModal";
 import { RatingCard } from "@/components/RatingCard";
+import { ReviewPreviewCard } from "@/components/ReviewPreviewCard";
 import { getRatings } from "@/lib/ratings";
 import type { PonchaRating } from "@/lib/supabase";
 
@@ -23,9 +26,9 @@ export default function Home() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [focus, setFocus] = useState<{ id: string; nonce: number } | null>(
-    null
-  );
+  const [focus, setFocus] = useState<{ id: string; nonce: number } | null>(null);
+  const [selected, setSelected] = useState<PonchaRating | null>(null);
+  const [editing, setEditing] = useState<PonchaRating | null>(null);
 
   useEffect(() => {
     getRatings()
@@ -34,7 +37,12 @@ export default function Home() {
   }, []);
 
   const handleMapClick = useCallback((lat: number, lng: number) => {
+    setSelected(null);
     setPendingLocation({ lat, lng });
+  }, []);
+
+  const handlePinClick = useCallback((r: PonchaRating) => {
+    setSelected(r);
   }, []);
 
   function handleSaved(r: PonchaRating) {
@@ -42,120 +50,110 @@ export default function Home() {
     setPendingLocation(null);
   }
 
-  function handleDelete(id: string) {
-    setRatings((prev) => prev.filter((r) => r.id !== id));
-  }
-
   function handleUpdate(updated: PonchaRating) {
     setRatings((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    setSelected((prev) => (prev?.id === updated.id ? updated : prev));
+  }
+
+  function handleDelete(id: string) {
+    setRatings((prev) => prev.filter((r) => r.id !== id));
+    setSelected((prev) => (prev?.id === id ? null : prev));
   }
 
   function handleCardClick(r: PonchaRating) {
     setFocus((prev) => ({ id: r.id, nonce: (prev?.nonce ?? 0) + 1 }));
+    setSelected(r);
     setView("map");
   }
 
   return (
-    <div className="flex flex-col h-dvh bg-gray-50">
-      {/* Header */}
-      <header className="bg-amber-500 text-white px-4 py-3 flex items-center justify-between shadow-md flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Wine size={22} />
-          <span className="font-bold text-lg tracking-tight">Poncha Madeira</span>
-        </div>
-        <span className="text-white/70 text-sm">{ratings.length} míst</span>
-      </header>
-
-      {/* View toggle */}
-      <div className="flex border-b border-gray-200 bg-white flex-shrink-0">
-        <button
-          onClick={() => setView("map")}
-          className={`flex-1 py-2.5 flex items-center justify-center gap-1.5 text-sm font-medium transition ${
-            view === "map"
-              ? "text-amber-600 border-b-2 border-amber-500"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <MapIcon size={16} />
-          Mapa
-        </button>
-        <button
-          onClick={() => setView("list")}
-          className={`flex-1 py-2.5 flex items-center justify-center gap-1.5 text-sm font-medium transition ${
-            view === "list"
-              ? "text-amber-600 border-b-2 border-amber-500"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <List size={16} />
-          Seznam
-        </button>
-      </div>
-
-      {/* Content – mapa zůstává trvale připojená (kvůli stavu a poloze),
-          seznam ji jen překryje */}
-      <main className="flex-1 overflow-hidden relative">
+    <div className="flex flex-col h-dvh bg-sand">
+      <main className="flex-1 relative overflow-hidden">
+        {/* Mapa zůstává trvale připojená */}
         <div className="absolute inset-0">
           {!loading && (
             <PonchaMap
               ratings={ratings}
               onMapClick={handleMapClick}
+              onPinClick={handlePinClick}
+              selectedId={selected?.id}
               focusedId={focus?.id ?? null}
               focusNonce={focus?.nonce ?? 0}
             />
           )}
-          {view === "map" && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur text-xs text-gray-500 px-3 py-1.5 rounded-full shadow pointer-events-none">
-              Klikni na mapu pro přidání ponchy
-            </div>
-          )}
         </div>
 
+        {/* Seznam jako překryv */}
         {view === "list" && (
-          <div className="absolute inset-0 z-10 bg-gray-50 overflow-y-auto p-4 space-y-3">
+          <div className="absolute inset-0 z-10 bg-sand overflow-y-auto px-4 pt-20 pb-28">
+            <h2 className="font-display font-bold text-xl text-ink mb-4 px-1">
+              Ohodnocené podniky
+            </h2>
             {loading && (
-              <div className="text-center text-gray-400 py-8">Načítám...</div>
+              <div className="text-center text-inksoft/60 py-8">Načítám...</div>
             )}
             {!loading && ratings.length === 0 && (
               <div className="text-center py-16">
-                <Wine size={40} className="mx-auto text-amber-300 mb-3" />
-                <p className="text-gray-500 font-medium">Zatím žádná poncha</p>
-                <p className="text-gray-400 text-sm mt-1">
+                <WineOff size={40} className="mx-auto text-brand/40 mb-3" />
+                <p className="text-inksoft font-medium">Zatím žádná poncha</p>
+                <p className="text-inksoft/70 text-sm mt-1">
                   Přepni na mapu a klikni na místo, kde jsi ponchu měl/a
                 </p>
               </div>
             )}
-            {ratings.map((r) => (
-              <RatingCard
-                key={r.id}
-                rating={r}
-                onDelete={handleDelete}
-                onUpdate={handleUpdate}
-                onClick={() => handleCardClick(r)}
-              />
-            ))}
+            <div className="space-y-3">
+              {ratings.map((r) => (
+                <RatingCard
+                  key={r.id}
+                  rating={r}
+                  onDelete={handleDelete}
+                  onUpdate={handleUpdate}
+                  onClick={() => handleCardClick(r)}
+                />
+              ))}
+            </div>
           </div>
         )}
+
+        {/* Plovoucí hlavička */}
+        <div className="absolute top-0 inset-x-0 z-20 pointer-events-none">
+          <AppHeader />
+        </div>
+
+        {/* Náhledová karta vybraného místa (na mapě) */}
+        {view === "map" && selected && (
+          <div className="absolute inset-x-4 z-20" style={{ bottom: 88 }}>
+            <ReviewPreviewCard
+              rating={selected}
+              onClose={() => setSelected(null)}
+              onEdit={() => setEditing(selected)}
+            />
+          </div>
+        )}
+
+        {/* Spodní navigace */}
+        <div className="absolute bottom-6 inset-x-0 z-30 flex justify-center">
+          <BottomNav view={view} onViewChange={setView} />
+        </div>
       </main>
 
-      {/* FAB – pro přidání z listu */}
-      {view === "list" && (
-        <button
-          onClick={() => setView("map")}
-          className="fixed bottom-6 right-6 bg-amber-500 hover:bg-amber-600 text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition"
-          aria-label="Přidat ponchu"
-        >
-          <Plus size={26} />
-        </button>
-      )}
-
-      {/* Modal */}
       {pendingLocation && (
         <AddRatingModal
           lat={pendingLocation.lat}
           lng={pendingLocation.lng}
           onClose={() => setPendingLocation(null)}
           onSaved={handleSaved}
+        />
+      )}
+
+      {editing && (
+        <EditRatingModal
+          rating={editing}
+          onClose={() => setEditing(null)}
+          onSaved={(r) => {
+            handleUpdate(r);
+            setEditing(null);
+          }}
         />
       )}
     </div>

@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { X, MapPin, Loader2 } from "lucide-react";
-import { StarRating } from "./StarRating";
+import { Loader2 } from "lucide-react";
+import { RatingPills } from "./RatingPills";
+import { Chip } from "./Chip";
 import { addRating } from "@/lib/ratings";
 import { reverseGeocode } from "@/lib/geocode";
+import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
-
-const PONCHA_TYPES = ["Pescador", "Regional", "Maracujá", "Tangerina", "Other"];
 
 type Props = {
   lat: number;
@@ -18,20 +18,19 @@ type Props = {
 export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   const [placeName, setPlaceName] = useState("");
   const [address, setAddress] = useState("");
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(8);
   const [ponchaTypes, setPonchaTypes] = useState<string[]>([]);
+  const [balance, setBalance] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [geoLoading, setGeoLoading] = useState(true);
 
-  // Po otevření zkusíme z mapy automaticky načíst název podniku a adresu
   useEffect(() => {
     let active = true;
     reverseGeocode(lat, lng)
       .then((res) => {
         if (!active) return;
-        // Nepřepisujeme, pokud už uživatel mezitím něco napsal
         if (res.placeName) setPlaceName((prev) => prev || res.placeName);
         if (res.address) setAddress((prev) => prev || res.address);
       })
@@ -63,6 +62,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         address: address.trim() || null,
         rating,
         poncha_type: ponchaTypes.join(", ") || null,
+        balance,
         notes: notes.trim() || null,
         latitude: lat,
         longitude: lng,
@@ -77,112 +77,151 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-amber-500 px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white font-bold text-lg">
-            <MapPin size={20} />
-            Přidat hodnocení ponchy
+    <RatingSheet title="Ohodnotit ponchu" onClose={onClose}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <PlaceFields
+          placeName={placeName}
+          address={address}
+          geoLoading={geoLoading}
+          onName={setPlaceName}
+          onAddress={setAddress}
+        />
+
+        <Section label="Hodnocení">
+          <RatingPills value={rating} onChange={setRating} />
+        </Section>
+
+        <Section label="Typ ponchy">
+          <div className="flex flex-wrap gap-2">
+            {PONCHA_TYPES.map((t) => (
+              <Chip
+                key={t}
+                label={t}
+                active={ponchaTypes.includes(t)}
+                onClick={() => toggleType(t)}
+              />
+            ))}
           </div>
-          <button onClick={onClose} className="text-white/80 hover:text-white">
-            <X size={22} />
-          </button>
+        </Section>
+
+        <Section label="Vyváženost">
+          <div className="flex flex-wrap gap-2">
+            {BALANCE_OPTIONS.map((b) => (
+              <Chip
+                key={b}
+                label={b}
+                color="green"
+                active={balance === b}
+                onClick={() => setBalance((prev) => (prev === b ? null : b))}
+              />
+            ))}
+          </div>
+        </Section>
+
+        <Section label="Poznámka">
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Přidejte poznámku k ponše..."
+            rows={3}
+            className="w-full bg-cream border border-sanddark rounded-xl p-4 text-[15px] text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight resize-none"
+          />
+        </Section>
+
+        {error && <p className="text-pinred text-sm">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="h-14 rounded-full bg-brand text-white font-bold text-base disabled:opacity-50 transition"
+        >
+          {saving ? "Ukládám..." : "Uložit hodnocení"}
+        </button>
+      </form>
+    </RatingSheet>
+  );
+}
+
+/* ── Sdílené prvky panelu ── */
+
+export function RatingSheet({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-cream w-full max-w-md rounded-t-3xl px-6 pt-3 pb-10 max-h-[92dvh] overflow-y-auto shadow-[0_-4px_20px_rgba(0,0,0,0.2)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-center pb-3">
+          <div className="h-1 w-10 rounded-full bg-sanddark" />
         </div>
-
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div className="text-xs text-gray-400 flex gap-1 items-center">
-            <MapPin size={12} />
-            {lat.toFixed(5)}, {lng.toFixed(5)}
-          </div>
-
-          {geoLoading && (
-            <div className="flex items-center gap-1.5 text-xs text-amber-600">
-              <Loader2 size={12} className="animate-spin" />
-              Načítám místo z mapy…
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Název podniku *
-            </label>
-            <input
-              value={placeName}
-              onChange={(e) => setPlaceName(e.target.value)}
-              placeholder="např. Barreirinha Bar Café"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Adresa
-            </label>
-            <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Ulice, Funchal"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center justify-between text-sm font-medium text-gray-700 mb-2">
-              <span>Hodnocení</span>
-              <span className="text-amber-600 font-semibold">{rating}/10</span>
-            </label>
-            <StarRating value={rating} onChange={setRating} size={26} max={10} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Druh ponchy
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {PONCHA_TYPES.map((t) => {
-                const active = ponchaTypes.includes(t);
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleType(t)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition ${
-                      active
-                        ? "bg-amber-500 border-amber-500 text-white"
-                        : "bg-white border-gray-200 text-gray-600 hover:border-amber-300"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Poznámky
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Chuť, atmosféra, doporučení..."
-              rows={3}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
-            />
-          </div>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-semibold py-2.5 rounded-xl transition"
-          >
-            {saving ? "Ukládám..." : "Uložit hodnocení"}
-          </button>
-        </form>
+        <h2 className="font-display font-bold text-2xl text-ink mb-6">{title}</h2>
+        {children}
       </div>
+    </div>
+  );
+}
+
+export function Section({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs font-extrabold uppercase tracking-wide text-inksoft">
+        {label}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+export function PlaceFields({
+  placeName,
+  address,
+  geoLoading,
+  onName,
+  onAddress,
+}: {
+  placeName: string;
+  address: string;
+  geoLoading: boolean;
+  onName: (v: string) => void;
+  onAddress: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <input
+        value={placeName}
+        onChange={(e) => onName(e.target.value)}
+        placeholder="Název podniku *"
+        className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[15px] font-semibold text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight"
+      />
+      <input
+        value={address}
+        onChange={(e) => onAddress(e.target.value)}
+        placeholder="Adresa"
+        className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[14px] text-inksoft placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight"
+      />
+      {geoLoading && (
+        <div className="flex items-center gap-1.5 text-xs text-brand">
+          <Loader2 size={12} className="animate-spin" />
+          Načítám místo z mapy…
+        </div>
+      )}
     </div>
   );
 }

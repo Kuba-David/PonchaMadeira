@@ -12,6 +12,7 @@ export type PonchaRating = {
   address: string | null;
   rating: number;
   poncha_type: string | null;
+  balance: string | null;
   notes: string | null;
   latitude: number;
   longitude: number;

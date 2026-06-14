@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS poncha_ratings (
   address TEXT,
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 10),
   poncha_type TEXT,
+  balance TEXT,
   notes TEXT,
   latitude DOUBLE PRECISION NOT NULL,
   longitude DOUBLE PRECISION NOT NULL,

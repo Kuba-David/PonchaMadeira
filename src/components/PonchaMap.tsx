@@ -1,15 +1,12 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import Map, {
   Marker,
-  Popup,
-  NavigationControl,
   GeolocateControl,
   type GeolocateControlInstance,
   type MapRef,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { StarRating } from "./StarRating";
 import type { PonchaRating } from "@/lib/supabase";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
@@ -20,54 +17,52 @@ const INITIAL_VIEW = { longitude: -16.9, latitude: 32.75, zoom: 10 };
 type Props = {
   ratings: PonchaRating[];
   onMapClick: (lat: number, lng: number) => void;
+  onPinClick: (r: PonchaRating) => void;
+  selectedId?: string | null;
   focusedId?: string | null;
   focusNonce?: number;
 };
 
+function pinColor(r: number) {
+  if (r >= 8) return "#4a7c59";
+  if (r >= 5) return "#e8824a";
+  return "#c0392b";
+}
+
 export function PonchaMap({
   ratings,
   onMapClick,
+  onPinClick,
+  selectedId,
   focusedId,
   focusNonce = 0,
 }: Props) {
-  const [popup, setPopup] = useState<PonchaRating | null>(null);
   const geolocateRef = useRef<GeolocateControlInstance | null>(null);
   const mapRef = useRef<MapRef | null>(null);
 
   const handleClick = useCallback(
     (e: { lngLat: { lat: number; lng: number } }) => {
-      setPopup(null);
       onMapClick(e.lngLat.lat, e.lngLat.lng);
     },
     [onMapClick]
   );
 
-  // Po načtení mapy se pokusíme rovnou vycentrovat na polohu uživatele.
-  // Když uživatel polohu nepovolí, prostě zůstane výchozí pohled na Madeiru.
   const handleLoad = useCallback(() => {
     geolocateRef.current?.trigger();
   }, []);
 
-  // Když uživatel klikne na hodnocení v seznamu, přeletíme na dané místo
-  // a otevřeme jeho popup.
+  // Přelet na místo po kliknutí na kartu v seznamu
   useEffect(() => {
     if (!focusNonce || !focusedId) return;
     const target = ratings.find((r) => r.id === focusedId);
     if (!target) return;
     mapRef.current?.flyTo({
       center: [target.longitude, target.latitude],
-      zoom: 16,
+      zoom: 15,
       duration: 1200,
     });
-    setPopup(target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce]);
-
-  function ratingColor(r: number) {
-    if (r >= 8) return "#22c55e";
-    if (r >= 5) return "#f59e0b";
-    return "#ef4444";
-  }
 
   return (
     <Map
@@ -80,7 +75,6 @@ export function PonchaMap({
       onLoad={handleLoad}
       cursor="crosshair"
     >
-      <NavigationControl position="top-right" />
       <GeolocateControl
         ref={geolocateRef}
         position="top-right"
@@ -88,54 +82,37 @@ export function PonchaMap({
         positionOptions={{ enableHighAccuracy: true }}
       />
 
-      {ratings.map((r) => (
-        <Marker
-          key={r.id}
-          longitude={r.longitude}
-          latitude={r.latitude}
-          anchor="bottom"
-          onClick={(e) => {
-            e.originalEvent.stopPropagation();
-            setPopup(r);
-          }}
-        >
-          <div
-            className="flex items-center justify-center w-9 h-9 rounded-full border-2 border-white shadow-lg text-white font-bold text-sm cursor-pointer transition-transform hover:scale-110"
-            style={{
-              backgroundColor: ratingColor(r.rating),
-              outline: focusedId === r.id ? "3px solid #f59e0b" : undefined,
+      {ratings.map((r) => {
+        const size = Math.min(44, Math.max(28, 22 + r.rating * 2));
+        const selected = selectedId === r.id;
+        return (
+          <Marker
+            key={r.id}
+            longitude={r.longitude}
+            latitude={r.latitude}
+            anchor="center"
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              onPinClick(r);
             }}
           >
-            {r.rating}
-          </div>
-        </Marker>
-      ))}
-
-      {popup && (
-        <Popup
-          longitude={popup.longitude}
-          latitude={popup.latitude}
-          anchor="bottom"
-          offset={40}
-          onClose={() => setPopup(null)}
-          closeOnClick={false}
-          className="poncha-popup"
-        >
-          <div className="p-1 min-w-[160px]">
-            <p className="font-semibold text-gray-900 text-sm">{popup.place_name}</p>
-            {popup.poncha_type && (
-              <p className="text-xs text-amber-600 mt-0.5">{popup.poncha_type}</p>
-            )}
-            <div className="mt-1 flex items-center gap-1.5">
-              <StarRating value={popup.rating} size={12} max={10} />
-              <span className="text-xs text-gray-400">{popup.rating}/10</span>
+            <div
+              className="flex items-center justify-center rounded-full border-2 border-white text-white font-extrabold cursor-pointer transition-transform hover:scale-110"
+              style={{
+                width: size,
+                height: size,
+                fontSize: size * 0.4,
+                backgroundColor: pinColor(r.rating),
+                boxShadow: selected
+                  ? "0 0 0 4px rgba(211,84,0,0.4)"
+                  : "0 2px 6px rgba(0,0,0,0.3)",
+              }}
+            >
+              {r.rating}
             </div>
-            {popup.notes && (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-3">{popup.notes}</p>
-            )}
-          </div>
-        </Popup>
-      )}
+          </Marker>
+        );
+      })}
     </Map>
   );
 }

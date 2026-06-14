@@ -1,0 +1,59 @@
+"use client";
+import { WineOff, MapPin, X, Pencil } from "lucide-react";
+import { RatingBadge } from "./RatingBadge";
+import type { PonchaRating } from "@/lib/supabase";
+
+type Props = {
+  rating: PonchaRating;
+  onClose: () => void;
+  onEdit: () => void;
+};
+
+export function ReviewPreviewCard({ rating, onClose, onEdit }: Props) {
+  return (
+    <div className="bg-white rounded-2xl shadow-xl p-4 flex gap-3 items-start">
+      <div className="size-14 rounded-xl bg-cream flex items-center justify-center text-brand shrink-0">
+        <WineOff size={26} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-display font-bold text-[17px] text-ink truncate">
+            {rating.place_name}
+          </h3>
+          <RatingBadge value={rating.rating} />
+        </div>
+
+        {rating.address && (
+          <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
+            <MapPin size={12} className="shrink-0" />
+            <span className="truncate">{rating.address}</span>
+          </p>
+        )}
+
+        {rating.notes && (
+          <p className="text-[13px] text-inksoft italic mt-1 line-clamp-2">
+            “{rating.notes}”
+          </p>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2 shrink-0">
+        <button
+          onClick={onClose}
+          aria-label="Zavřít"
+          className="text-sanddark hover:text-inksoft transition"
+        >
+          <X size={18} />
+        </button>
+        <button
+          onClick={onEdit}
+          aria-label="Upravit"
+          className="text-sanddark hover:text-brand transition"
+        >
+          <Pencil size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}

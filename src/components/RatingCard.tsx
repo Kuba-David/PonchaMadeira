@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { MapPin, Trash2, Calendar, Pencil } from "lucide-react";
-import { StarRating } from "./StarRating";
+import { WineOff, MapPin, Trash2, Pencil } from "lucide-react";
+import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
 import { deleteRating } from "@/lib/ratings";
 import { EditRatingModal } from "./EditRatingModal";
@@ -23,70 +23,65 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
     onDelete(rating.id);
   }
 
-  function handleEditClick(e: React.MouseEvent) {
+  function handleEdit(e: React.MouseEvent) {
     e.stopPropagation();
     setEditing(true);
   }
-
-  const date = new Date(rating.created_at).toLocaleDateString("cs-CZ", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 
   return (
     <>
       <div
         onClick={onClick}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-pointer hover:shadow-md transition"
+        className="bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start cursor-pointer hover:shadow-md transition"
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">{rating.place_name}</h3>
-            {rating.address && (
-              <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                <MapPin size={11} />
-                {rating.address}
-              </p>
-            )}
+        <div className="size-14 rounded-xl bg-cream flex items-center justify-center text-brand shrink-0">
+          <WineOff size={26} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-display font-bold text-[17px] text-ink truncate">
+              {rating.place_name}
+            </h3>
+            <RatingBadge value={rating.rating} />
           </div>
-          <div className="flex gap-1.5 flex-shrink-0">
+
+          {rating.address && (
+            <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
+              <MapPin size={12} className="shrink-0" />
+              <span className="truncate">{rating.address}</span>
+            </p>
+          )}
+
+          {rating.poncha_type && (
+            <p className="text-xs text-brand font-medium mt-1">
+              {rating.poncha_type}
+            </p>
+          )}
+
+          {rating.notes && (
+            <p className="text-[13px] text-inksoft italic mt-1 line-clamp-2">
+              “{rating.notes}”
+            </p>
+          )}
+
+          <div className="flex justify-end gap-3 mt-2">
             <button
-              onClick={handleEditClick}
-              className="text-gray-300 hover:text-amber-400 transition"
+              onClick={handleEdit}
               aria-label="Upravit"
+              className="text-sanddark hover:text-brand transition"
             >
               <Pencil size={15} />
             </button>
             <button
               onClick={handleDelete}
-              className="text-gray-300 hover:text-red-400 transition"
               aria-label="Smazat"
+              className="text-sanddark hover:text-pinred transition"
             >
               <Trash2 size={15} />
             </button>
           </div>
         </div>
-
-        <div className="mt-2 flex items-center gap-2">
-          <StarRating value={rating.rating} size={14} max={10} />
-          <span className="text-xs text-gray-400 flex-shrink-0">
-            {rating.rating}/10
-          </span>
-        </div>
-
-        {rating.poncha_type && (
-          <p className="text-xs text-amber-600 mt-1.5 font-medium">{rating.poncha_type}</p>
-        )}
-
-        {rating.notes && (
-          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{rating.notes}</p>
-        )}
-
-        <p className="text-xs text-gray-300 mt-2 flex items-center gap-1">
-          <Calendar size={11} />
-          {date}
-        </p>
       </div>
 
       {editing && (
