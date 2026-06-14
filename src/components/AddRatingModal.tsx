@@ -156,6 +156,9 @@ export function RatingSheet({
   children: React.ReactNode;
 }) {
   const startYRef = useRef<number | null>(null);
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     const prev = document.body.style.overscrollBehavior;
@@ -165,28 +168,53 @@ export function RatingSheet({
 
   function handleTouchStart(e: React.TouchEvent) {
     startYRef.current = e.touches[0].clientY;
+    setDragging(true);
   }
 
-  function handleTouchEnd(e: React.TouchEvent) {
+  function handleTouchMove(e: React.TouchEvent) {
     if (startYRef.current === null) return;
-    const delta = e.changedTouches[0].clientY - startYRef.current;
-    startYRef.current = null;
-    if (delta > 60) onClose();
+    const delta = e.touches[0].clientY - startYRef.current;
+    setDragY(Math.max(0, delta));
   }
+
+  function handleTouchEnd() {
+    if (startYRef.current === null) return;
+    startYRef.current = null;
+    setDragging(false);
+    if (dragY > 90) {
+      setClosing(true);
+      setDragY(window.innerHeight);
+      setTimeout(onClose, 260);
+    } else {
+      setDragY(0);
+    }
+  }
+
+  // průhlednost pozadí podle tažení (max ~30 % zeslabení)
+  const backdropOpacity = closing ? 0 : Math.max(0.4 - dragY / 800, 0.12);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{
+        backgroundColor: `rgba(0,0,0,${backdropOpacity})`,
+        transition: dragging ? "none" : "background-color 0.26s ease",
+      }}
       onClick={onClose}
     >
       <div
         className="bg-cream w-full max-w-md rounded-t-3xl px-6 pt-3 pb-10 max-h-[92dvh] overflow-y-auto shadow-[0_-4px_20px_rgba(0,0,0,0.2)]"
+        style={{
+          transform: `translateY(${dragY}px)`,
+          transition: dragging ? "none" : "transform 0.26s cubic-bezier(0.32,0.72,0,1)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
           className="flex justify-center pb-3 cursor-grab"
           style={{ touchAction: "none" }}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           <div className="h-1 w-10 rounded-full bg-sanddark" />
