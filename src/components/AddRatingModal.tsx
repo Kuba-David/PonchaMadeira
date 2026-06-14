@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
@@ -147,12 +147,27 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
 export function RatingSheet({
   title,
   onClose,
+  action,
   children,
 }: {
   title: string;
   onClose: () => void;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const startYRef = useRef<number | null>(null);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    startYRef.current = e.touches[0].clientY;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (startYRef.current === null) return;
+    const delta = e.changedTouches[0].clientY - startYRef.current;
+    startYRef.current = null;
+    if (delta > 60) onClose();
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
@@ -162,10 +177,17 @@ export function RatingSheet({
         className="bg-cream w-full max-w-md rounded-t-3xl px-6 pt-3 pb-10 max-h-[92dvh] overflow-y-auto shadow-[0_-4px_20px_rgba(0,0,0,0.2)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-center pb-3">
+        <div
+          className="flex justify-center pb-3 cursor-grab"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="h-1 w-10 rounded-full bg-sanddark" />
         </div>
-        <h2 className="font-display font-bold text-2xl text-ink mb-6">{title}</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="font-display font-bold text-2xl text-ink">{title}</h2>
+          {action}
+        </div>
         {children}
       </div>
     </div>

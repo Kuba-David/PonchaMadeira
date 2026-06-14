@@ -97,7 +97,7 @@ export function PonchaMap({
             }}
           >
             <div
-              className="flex items-center justify-center rounded-full border-2 border-white text-white font-extrabold cursor-pointer transition-transform hover:scale-110"
+              className="flex items-center justify-center rounded-full border-2 border-white text-white font-extrabold font-sans cursor-pointer transition-transform hover:scale-110"
               style={{
                 width: size,
                 height: size,
@@ -106,6 +106,7 @@ export function PonchaMap({
                 boxShadow: selected
                   ? "0 0 0 4px rgba(211,84,0,0.4)"
                   : "0 2px 6px rgba(0,0,0,0.3)",
+                fontFamily: "var(--font-geist-sans, var(--font-sans))",
               }}
             >
               {r.rating}

@@ -4,11 +4,11 @@ type Props = {
   label: string;
   active: boolean;
   onClick: () => void;
-  /** barva vybraného stavu */
   color?: "brand" | "green";
+  disabled?: boolean;
 };
 
-export function Chip({ label, active, onClick, color = "brand" }: Props) {
+export function Chip({ label, active, onClick, color = "brand", disabled }: Props) {
   const activeClass =
     color === "green"
       ? "bg-pingreen border-pingreen text-white"
@@ -17,12 +17,12 @@ export function Chip({ label, active, onClick, color = "brand" }: Props) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       className={`px-4 py-2.5 rounded-full border text-sm font-semibold transition ${
         active
           ? activeClass
-          : "bg-cream border-sanddark text-inksoft hover:border-brandlight"
-      }`}
+          : "bg-cream border-sanddark text-inksoft"
+      } ${disabled ? "cursor-default" : "hover:border-brandlight"}`}
     >
       {label}
     </button>

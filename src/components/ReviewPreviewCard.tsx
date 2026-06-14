@@ -7,16 +7,21 @@ type Props = {
   rating: PonchaRating;
   onClose: () => void;
   onEdit: () => void;
+  onDetail: () => void;
 };
 
-export function ReviewPreviewCard({ rating, onClose, onEdit }: Props) {
+export function ReviewPreviewCard({ rating, onClose, onEdit, onDetail }: Props) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-4 flex gap-3 items-start">
-      <div className="size-14 rounded-xl bg-cream flex items-center justify-center text-brand shrink-0">
+      <button
+        onClick={onDetail}
+        className="size-14 rounded-xl bg-cream flex items-center justify-center text-brand shrink-0 hover:bg-sanddark transition"
+        aria-label="Zobrazit detail"
+      >
         <WineOff size={26} />
-      </div>
+      </button>
 
-      <div className="flex-1 min-w-0">
+      <button onClick={onDetail} className="flex-1 min-w-0 text-left">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-display font-bold text-[17px] text-ink truncate">
             {rating.place_name}
@@ -33,10 +38,10 @@ export function ReviewPreviewCard({ rating, onClose, onEdit }: Props) {
 
         {rating.notes && (
           <p className="text-[13px] text-inksoft italic mt-1 line-clamp-2">
-            “{rating.notes}”
+            &ldquo;{rating.notes}&rdquo;
           </p>
         )}
-      </div>
+      </button>
 
       <div className="flex flex-col gap-2 shrink-0">
         <button

@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { BottomNav } from "@/components/BottomNav";
 import { AddRatingModal } from "@/components/AddRatingModal";
 import { EditRatingModal } from "@/components/EditRatingModal";
+import { DetailRatingModal } from "@/components/DetailRatingModal";
 import { RatingCard } from "@/components/RatingCard";
 import { ReviewPreviewCard } from "@/components/ReviewPreviewCard";
 import { getRatings } from "@/lib/ratings";
@@ -28,6 +29,7 @@ export default function Home() {
   } | null>(null);
   const [focus, setFocus] = useState<{ id: string; nonce: number } | null>(null);
   const [selected, setSelected] = useState<PonchaRating | null>(null);
+  const [detail, setDetail] = useState<PonchaRating | null>(null);
   const [editing, setEditing] = useState<PonchaRating | null>(null);
 
   useEffect(() => {
@@ -53,11 +55,13 @@ export default function Home() {
   function handleUpdate(updated: PonchaRating) {
     setRatings((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
     setSelected((prev) => (prev?.id === updated.id ? updated : prev));
+    setDetail((prev) => (prev?.id === updated.id ? updated : prev));
   }
 
   function handleDelete(id: string) {
     setRatings((prev) => prev.filter((r) => r.id !== id));
     setSelected((prev) => (prev?.id === id ? null : prev));
+    setDetail((prev) => (prev?.id === id ? null : prev));
   }
 
   function handleCardClick(r: PonchaRating) {
@@ -127,6 +131,7 @@ export default function Home() {
               rating={selected}
               onClose={() => setSelected(null)}
               onEdit={() => setEditing(selected)}
+              onDetail={() => setDetail(selected)}
             />
           </div>
         )}
@@ -143,6 +148,17 @@ export default function Home() {
           lng={pendingLocation.lng}
           onClose={() => setPendingLocation(null)}
           onSaved={handleSaved}
+        />
+      )}
+
+      {detail && (
+        <DetailRatingModal
+          rating={detail}
+          onClose={() => setDetail(null)}
+          onEdit={() => {
+            setEditing(detail);
+            setDetail(null);
+          }}
         />
       )}
 
