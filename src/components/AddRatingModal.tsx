@@ -157,6 +157,12 @@ export function RatingSheet({
 }) {
   const startYRef = useRef<number | null>(null);
 
+  useEffect(() => {
+    const prev = document.body.style.overscrollBehavior;
+    document.body.style.overscrollBehavior = "none";
+    return () => { document.body.style.overscrollBehavior = prev; };
+  }, []);
+
   function handleTouchStart(e: React.TouchEvent) {
     startYRef.current = e.touches[0].clientY;
   }
@@ -179,6 +185,7 @@ export function RatingSheet({
       >
         <div
           className="flex justify-center pb-3 cursor-grab"
+          style={{ touchAction: "none" }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >

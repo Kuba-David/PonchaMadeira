@@ -90,12 +90,6 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
           </Section>
         )}
 
-        <button
-          onClick={onEdit}
-          className="h-14 rounded-full bg-brand text-white font-bold text-base transition hover:opacity-90"
-        >
-          Upravit hodnocení
-        </button>
       </div>
     </RatingSheet>
   );
