@@ -46,7 +46,7 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
               value={rating.rating}
               className="min-w-[38px] h-[38px] text-xl rounded-xl"
             />
-            <span className="text-sm text-inksoft">{rating.rating} / 10</span>
+            <span className="text-sm text-inksoft">/ 10</span>
           </div>
         </Section>
 
