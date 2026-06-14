@@ -1,16 +1,15 @@
 "use client";
-import { WineOff, MapPin, X, Pencil } from "lucide-react";
+import { WineOff, MapPin, X } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
 
 type Props = {
   rating: PonchaRating;
   onClose: () => void;
-  onEdit: () => void;
   onDetail: () => void;
 };
 
-export function ReviewPreviewCard({ rating, onClose, onEdit, onDetail }: Props) {
+export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-4 flex gap-3 items-start">
       <button
@@ -43,20 +42,13 @@ export function ReviewPreviewCard({ rating, onClose, onEdit, onDetail }: Props) 
         )}
       </button>
 
-      <div className="flex flex-col gap-2 shrink-0">
+      <div className="shrink-0">
         <button
           onClick={onClose}
           aria-label="Zavřít"
           className="text-sanddark hover:text-inksoft transition"
         >
           <X size={18} />
-        </button>
-        <button
-          onClick={onEdit}
-          aria-label="Upravit"
-          className="text-sanddark hover:text-brand transition"
-        >
-          <Pencil size={16} />
         </button>
       </div>
     </div>

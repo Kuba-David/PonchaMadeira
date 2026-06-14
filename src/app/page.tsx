@@ -130,7 +130,6 @@ export default function Home() {
             <ReviewPreviewCard
               rating={selected}
               onClose={() => setSelected(null)}
-              onEdit={() => setEditing(selected)}
               onDetail={() => setDetail(selected)}
             />
           </div>

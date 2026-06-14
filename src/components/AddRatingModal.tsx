@@ -211,8 +211,8 @@ export function RatingSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="flex justify-center pb-3 cursor-grab"
-          style={{ touchAction: "none" }}
+          className="flex justify-center pt-1 pb-4 cursor-grab"
+          style={{ touchAction: "none", margin: "0 -24px" }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
