@@ -21,7 +21,7 @@ async function compress(file: File): Promise<Blob> {
   });
 }
 
-// Vytáhne X a Y složky z uloženého object-position řetězce "X% Y%".
+// Vytáhne X a Y složky z uloženého formátu "X% Y%" nebo "X% Y% ZOOM".
 export function parsePhotoX(position: string | null | undefined): number {
   if (!position) return 50;
   const m = position.match(/([\d.]+)%/);
@@ -32,6 +32,15 @@ export function parsePhotoY(position: string | null | undefined): number {
   if (!position) return 50;
   const m = position.match(/[\d.]+%\s+([\d.]+)%/);
   return m ? parseFloat(m[1]) : 50;
+}
+
+// Třetí (nepovinná) hodnota v "X% Y% ZOOM" – výchozí 1 (žádný extra zoom).
+export function parsePhotoZoom(position: string | null | undefined): number {
+  if (!position) return 1;
+  const parts = position.trim().split(/\s+/);
+  if (parts.length < 3) return 1;
+  const z = parseFloat(parts[2]);
+  return isNaN(z) || z < 1 ? 1 : z;
 }
 
 export async function uploadPhoto(file: File): Promise<string> {
