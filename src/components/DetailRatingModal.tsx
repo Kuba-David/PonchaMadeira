@@ -2,23 +2,15 @@
 import { MapPin, Pencil } from "lucide-react";
 import { RatingSheet, Section } from "./AddRatingModal";
 import { RatingBadge } from "./RatingBadge";
-import { updateRating } from "@/lib/ratings";
 import type { PonchaRating } from "@/lib/supabase";
 
 type Props = {
   rating: PonchaRating;
   onClose: () => void;
   onEdit: () => void;
-  onUpdate?: (r: PonchaRating) => void;
 };
 
-function parseImgY(position: string | null): number {
-  if (!position) return 50;
-  const match = position.match(/[\d.]+%\s+([\d.]+)%/);
-  return match ? parseFloat(match[1]) : 50;
-}
-
-export function DetailRatingModal({ rating, onClose, onEdit, onUpdate }: Props) {
+export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
   const ponchaTypes = rating.poncha_type
     ? rating.poncha_type.split(", ").filter(Boolean)
     : [];
@@ -26,23 +18,12 @@ export function DetailRatingModal({ rating, onClose, onEdit, onUpdate }: Props) 
     ? rating.balance.split(", ").filter(Boolean)
     : [];
 
-  async function handleImgYChange(pct: number) {
-    const photo_position = `50% ${pct.toFixed(1)}%`;
-    try {
-      const updated = await updateRating(rating.id, { photo_position });
-      onUpdate?.(updated);
-    } catch {
-      // position save failure is non-critical
-    }
-  }
-
   return (
     <RatingSheet
       title={rating.place_name}
       onClose={onClose}
       topImage={rating.photo_url ?? undefined}
-      initialImgY={parseImgY(rating.photo_position)}
-      onImgYChange={handleImgYChange}
+      imgPosition={rating.photo_position ?? undefined}
       action={
         <button
           onClick={onEdit}

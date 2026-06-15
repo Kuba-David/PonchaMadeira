@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
 import { PhotoPicker } from "./PhotoPicker";
+import { PhotoPositionModal } from "./PhotoPositionModal";
 import { RatingSheet, Section, PlaceFields } from "./AddRatingModal";
 import { updateRating } from "@/lib/ratings";
-import { uploadPhoto } from "@/lib/photos";
+import { uploadPhoto, parsePhotoY } from "@/lib/photos";
 import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
 
@@ -29,6 +30,8 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [removePhoto, setRemovePhoto] = useState(false);
+  const [photoPosition, setPhotoPosition] = useState(rating.photo_position ?? "50% 50%");
+  const [showPositionModal, setShowPositionModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -44,6 +47,8 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
       setRemovePhoto(false);
+      setPhotoPosition("50% 50%");
+      setShowPositionModal(true);
     } else {
       setPhotoFile(null);
       setPhotoPreview(null);
@@ -73,14 +78,13 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
     setError("");
     try {
       let photo_url: string | null | undefined = undefined;
-      let photo_position: string | null | undefined = undefined;
-      if (photoFile) {
-        photo_url = await uploadPhoto(photoFile);
-        photo_position = "50% 50%";
-      } else if (removePhoto) {
-        photo_url = null;
-        photo_position = null;
-      }
+      if (photoFile) photo_url = await uploadPhoto(photoFile);
+      else if (removePhoto) photo_url = null;
+
+      // Pozici ukládáme i při pouhé úpravě výřezu existující fotky.
+      const hasPhoto = !!photoFile || (!!rating.photo_url && !removePhoto);
+      const photo_position = removePhoto ? null : hasPhoto ? photoPosition : undefined;
+
       const saved = await updateRating(rating.id, {
         place_name: placeName.trim(),
         address: address.trim() || null,
@@ -88,7 +92,8 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
         poncha_type: ponchaTypes.join(", ") || null,
         balance: taste.join(", ") || null,
         notes: notes.trim() || null,
-        ...(photo_url !== undefined ? { photo_url, photo_position } : {}),
+        ...(photo_url !== undefined ? { photo_url } : {}),
+        ...(photo_position !== undefined ? { photo_position } : {}),
       });
       onSaved(saved);
     } catch (err: unknown) {
@@ -99,6 +104,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
   }
 
   return (
+    <>
     <RatingSheet title="Edit rating" onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <PlaceFields
@@ -141,7 +147,12 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
         </Section>
 
         <Section label="Photos">
-          <PhotoPicker displayUrl={photoDisplayUrl} onChange={handlePhotoChange} />
+          <PhotoPicker
+            displayUrl={photoDisplayUrl}
+            onChange={handlePhotoChange}
+            objectPosition={photoPosition}
+            onReposition={() => setShowPositionModal(true)}
+          />
         </Section>
 
         <Section label="Note">
@@ -165,5 +176,18 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
         </button>
       </form>
     </RatingSheet>
+
+    {showPositionModal && photoDisplayUrl && (
+      <PhotoPositionModal
+        imageUrl={photoDisplayUrl}
+        initialY={parsePhotoY(photoPosition)}
+        onConfirm={(y) => {
+          setPhotoPosition(`50% ${y.toFixed(1)}%`);
+          setShowPositionModal(false);
+        }}
+        onCancel={() => setShowPositionModal(false)}
+      />
+    )}
+    </>
   );
 }

@@ -21,6 +21,13 @@ async function compress(file: File): Promise<Blob> {
   });
 }
 
+// Vytáhne svislou složku (Y %) z uloženého object-position řetězce "50% Y%".
+export function parsePhotoY(position: string | null | undefined): number {
+  if (!position) return 50;
+  const m = position.match(/[\d.]+%\s+([\d.]+)%/);
+  return m ? parseFloat(m[1]) : 50;
+}
+
 export async function uploadPhoto(file: File): Promise<string> {
   const blob = await compress(file);
   const path = `${crypto.randomUUID()}.jpg`;
