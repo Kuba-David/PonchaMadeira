@@ -203,7 +203,7 @@ export default function Home() {
         )}
 
         {/* Spodní navigace */}
-        <div className="absolute bottom-6 inset-x-0 z-30 flex justify-center">
+        <div className="absolute bottom-6 inset-x-0 z-30 flex justify-center px-4">
           <BottomNav
             view={view}
             onViewChange={setView}

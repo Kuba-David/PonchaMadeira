@@ -12,10 +12,10 @@ type Props = {
 
 export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props) {
   return (
-    <div className="flex items-center gap-2 bg-cream/95 backdrop-blur border border-sanddark rounded-full p-1.5 shadow-lg">
+    <div className="flex items-center gap-2 w-full max-w-[360px] bg-sand backdrop-blur border border-sanddark rounded-full p-1.5 shadow-lg">
       <button
         onClick={() => onViewChange("map")}
-        className={`px-7 py-3 rounded-full text-sm font-semibold transition ${
+        className={`flex-1 px-4 py-3 rounded-full text-sm font-semibold transition ${
           view === "map" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
@@ -23,7 +23,7 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
       </button>
       <button
         onClick={() => onViewChange("list")}
-        className={`px-7 py-3 rounded-full text-sm font-semibold transition ${
+        className={`flex-1 px-4 py-3 rounded-full text-sm font-semibold transition ${
           view === "list" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
@@ -32,7 +32,7 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
       <button
         onClick={onFilter}
         aria-label="Filtrovat"
-        className={`size-11 rounded-full flex items-center justify-center transition ${
+        className={`size-11 shrink-0 rounded-full flex items-center justify-center transition ${
           filterActive ? "text-brand" : "text-inksoft hover:text-brand"
         }`}
       >
