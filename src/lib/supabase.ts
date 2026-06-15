@@ -17,6 +17,7 @@ export type PonchaRating = {
   latitude: number;
   longitude: number;
   photo_url: string | null;
+  photo_position: string | null;
 };
 
 export type NewPonchaRating = Omit<PonchaRating, "id" | "created_at">;
