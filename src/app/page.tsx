@@ -10,6 +10,7 @@ import { DetailRatingModal } from "@/components/DetailRatingModal";
 import { FilterSheet } from "@/components/FilterSheet";
 import { RatingCard } from "@/components/RatingCard";
 import { ReviewPreviewCard } from "@/components/ReviewPreviewCard";
+import { SplashScreen } from "@/components/SplashScreen";
 import { getRatings } from "@/lib/ratings";
 import type { PonchaRating } from "@/lib/supabase";
 
@@ -36,6 +37,8 @@ export default function Home() {
   const [view, setView] = useState<View>("map");
   const [ratings, setRatings] = useState<PonchaRating[]>([]);
   const [loading, setLoading] = useState(true);
+  const [splashVisible, setSplashVisible] = useState(true);
+  const [splashFading, setSplashFading] = useState(false);
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [focus, setFocus] = useState<{ id: string; nonce: number } | null>(null);
   const [selected, setSelected] = useState<PonchaRating | null>(null);
@@ -71,6 +74,14 @@ export default function Home() {
       .then(setRatings)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      setSplashFading(true);
+      const t = setTimeout(() => setSplashVisible(false), 500);
+      return () => clearTimeout(t);
+    }
+  }, [loading]);
 
   const handleMapClick = useCallback((lat: number, lng: number) => {
     setSelected(null);
@@ -109,19 +120,20 @@ export default function Home() {
   return (
     <div className="flex flex-col h-dvh bg-sand">
       <main className="flex-1 relative overflow-hidden">
-        {/* Mapa zůstává trvale připojená */}
+        {/* Mapa se mountuje okamžitě, splash krije načítání */}
         <div className="absolute inset-0">
-          {!loading && (
-            <PonchaMap
-              ratings={mapRatings}
-              onMapClick={handleMapClick}
-              onPinClick={handlePinClick}
-              selectedId={selected?.id}
-              focusedId={focus?.id ?? null}
-              focusNonce={focus?.nonce ?? 0}
-            />
-          )}
+          <PonchaMap
+            ratings={mapRatings}
+            onMapClick={handleMapClick}
+            onPinClick={handlePinClick}
+            selectedId={selected?.id}
+            focusedId={focus?.id ?? null}
+            focusNonce={focus?.nonce ?? 0}
+          />
         </div>
+
+        {/* Titulní obrazovka – mizí s fade-out po načtení dat */}
+        {splashVisible && <SplashScreen fading={splashFading} />}
 
         {/* Seznam jako překryv */}
         {view === "list" && (
