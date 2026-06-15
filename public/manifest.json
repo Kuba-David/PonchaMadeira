@@ -1,7 +1,7 @@
 {
   "name": "Best Poncha",
   "short_name": "Best Poncha",
-  "description": "Hodnoť ponchu po celé Madeiře",
+  "description": "Rate poncha all over Madeira",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ebe6de",

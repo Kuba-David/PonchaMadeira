@@ -66,7 +66,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!placeName.trim()) {
-      setError("Název místa je povinný");
+      setError("Place name is required");
       return;
     }
     setSaving(true);
@@ -92,14 +92,14 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
       });
       onSaved(saved);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Chyba při ukládání");
+      setError(err instanceof Error ? err.message : "Error while saving");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <RatingSheet title="Upravit hodnocení" onClose={onClose}>
+    <RatingSheet title="Edit rating" onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <PlaceFields
           placeName={placeName}
@@ -109,11 +109,11 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           onAddress={setAddress}
         />
 
-        <Section label="Hodnocení">
+        <Section label="Rating">
           <RatingPills value={score} onChange={setScore} />
         </Section>
 
-        <Section label="Typ ponchy">
+        <Section label="Poncha type">
           <div className="flex flex-wrap gap-2">
             {PONCHA_TYPES.map((t) => (
               <Chip
@@ -126,7 +126,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Chuť">
+        <Section label="Taste">
           <div className="flex flex-wrap gap-2">
             {BALANCE_OPTIONS.map((b) => (
               <Chip
@@ -140,15 +140,15 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Obrázky">
+        <Section label="Photos">
           <PhotoPicker displayUrl={photoDisplayUrl} onChange={handlePhotoChange} />
         </Section>
 
-        <Section label="Poznámka">
+        <Section label="Note">
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Přidejte poznámku k ponše..."
+            placeholder="Add a note about the poncha..."
             rows={3}
             className="w-full bg-cream border border-sanddark rounded-xl p-4 text-[15px] text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight resize-none"
           />
@@ -161,7 +161,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           disabled={saving}
           className="h-14 rounded-full bg-brand text-white font-bold text-base disabled:opacity-50 transition"
         >
-          {saving ? (photoFile ? "Nahrávám foto…" : "Ukládám...") : "Uložit změny"}
+          {saving ? (photoFile ? "Uploading photo…" : "Saving...") : "Save changes"}
         </button>
       </form>
     </RatingSheet>

@@ -18,7 +18,7 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
-    if (!confirm(`Smazat hodnocení pro "${rating.place_name}"?`)) return;
+    if (!confirm(`Delete rating for "${rating.place_name}"?`)) return;
     await deleteRating(rating.id);
     onDelete(rating.id);
   }
@@ -72,14 +72,14 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
           <div className="flex justify-end gap-3 mt-2">
             <button
               onClick={handleEdit}
-              aria-label="Upravit"
+              aria-label="Edit"
               className="text-sanddark hover:text-brand transition"
             >
               <Pencil size={15} />
             </button>
             <button
               onClick={handleDelete}
-              aria-label="Smazat"
+              aria-label="Delete"
               className="text-sanddark hover:text-pinred transition"
             >
               <Trash2 size={15} />

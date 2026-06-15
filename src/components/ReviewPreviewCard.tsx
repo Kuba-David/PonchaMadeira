@@ -15,7 +15,7 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
       <button
         onClick={onDetail}
         className="size-14 rounded-xl overflow-hidden bg-cream shrink-0 flex items-center justify-center text-brand hover:opacity-90 transition"
-        aria-label="Zobrazit detail"
+        aria-label="View detail"
       >
         {rating.photo_url ? (
           <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
@@ -49,7 +49,7 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
       <div className="shrink-0">
         <button
           onClick={onClose}
-          aria-label="Zavřít"
+          aria-label="Close"
           className="text-sanddark hover:text-inksoft transition"
         >
           <X size={18} />

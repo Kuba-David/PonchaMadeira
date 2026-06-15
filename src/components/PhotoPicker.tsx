@@ -52,7 +52,7 @@ export function PhotoPicker({ displayUrl, onChange }: Props) {
               onClick={() => { setShowOptions(false); cameraRef.current?.click(); }}
             >
               <Camera size={18} className="text-inksoft shrink-0" />
-              Fotoaparát
+              Camera
             </button>
             <div className="h-px bg-sanddark" />
             <button
@@ -61,7 +61,7 @@ export function PhotoPicker({ displayUrl, onChange }: Props) {
               onClick={() => { setShowOptions(false); galleryRef.current?.click(); }}
             >
               <ImageIcon size={18} className="text-inksoft shrink-0" />
-              Galerie
+              Gallery
             </button>
           </div>
         </>
