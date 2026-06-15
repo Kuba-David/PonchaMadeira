@@ -76,7 +76,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!placeName.trim()) {
-      setError("Název místa je povinný");
+      setError("Place name is required");
       return;
     }
     setSaving(true);
@@ -98,14 +98,14 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
       });
       onSaved(saved);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Chyba při ukládání");
+      setError(err instanceof Error ? err.message : "Error while saving");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <RatingSheet title="Ohodnotit ponchu" onClose={onClose}>
+    <RatingSheet title="Rate poncha" onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <PlaceFields
           placeName={placeName}
@@ -115,11 +115,11 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           onAddress={setAddress}
         />
 
-        <Section label="Hodnocení">
+        <Section label="Rating">
           <RatingPills value={rating} onChange={setRating} />
         </Section>
 
-        <Section label="Typ ponchy">
+        <Section label="Poncha type">
           <div className="flex flex-wrap gap-2">
             {PONCHA_TYPES.map((t) => (
               <Chip
@@ -132,7 +132,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Chuť">
+        <Section label="Taste">
           <div className="flex flex-wrap gap-2">
             {BALANCE_OPTIONS.map((b) => (
               <Chip
@@ -146,15 +146,15 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Obrázky">
+        <Section label="Photos">
           <PhotoPicker displayUrl={photoPreview} onChange={handlePhotoChange} />
         </Section>
 
-        <Section label="Poznámka">
+        <Section label="Note">
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Přidejte poznámku k ponše..."
+            placeholder="Add a note about the poncha..."
             rows={3}
             className="w-full bg-cream border border-sanddark rounded-xl p-4 text-[15px] text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight resize-none"
           />
@@ -167,7 +167,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           disabled={saving}
           className="h-14 rounded-full bg-brand text-white font-bold text-base disabled:opacity-50 transition"
         >
-          {saving ? (photoFile ? "Nahrávám foto…" : "Ukládám...") : "Uložit hodnocení"}
+          {saving ? (photoFile ? "Uploading photo…" : "Saving...") : "Save rating"}
         </button>
       </form>
     </RatingSheet>
@@ -275,7 +275,7 @@ export function RatingSheet({
               onPointerCancel={() => { imgDragRef.current = null; }}
             />
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/30 rounded-full px-2 py-0.5 pointer-events-none">
-              <span className="text-white/80 text-[10px] font-medium">↕ přetáhni pro výřez</span>
+              <span className="text-white/80 text-[10px] font-medium">↕ drag to reposition</span>
             </div>
           </div>
         )}
@@ -335,19 +335,19 @@ export function PlaceFields({
       <input
         value={placeName}
         onChange={(e) => onName(e.target.value)}
-        placeholder="Název podniku *"
+        placeholder="Place name *"
         className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[15px] font-semibold text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight"
       />
       <input
         value={address}
         onChange={(e) => onAddress(e.target.value)}
-        placeholder="Adresa"
+        placeholder="Address"
         className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[14px] text-inksoft placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight"
       />
       {geoLoading && (
         <div className="flex items-center gap-1.5 text-xs text-brand">
           <Loader2 size={12} className="animate-spin" />
-          Načítám místo z mapy…
+          Loading place from map…
         </div>
       )}
     </div>

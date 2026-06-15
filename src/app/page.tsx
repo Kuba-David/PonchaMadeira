@@ -144,13 +144,13 @@ export default function Home() {
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Hledat podniky..."
+                placeholder="Search places..."
                 className="flex-1 text-[15px] text-ink placeholder:text-inksoft/60 bg-transparent focus:outline-none"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  aria-label="Vymazat"
+                  aria-label="Clear"
                   className="text-inksoft hover:text-ink transition"
                 >
                   <X size={16} />
@@ -159,26 +159,26 @@ export default function Home() {
             </div>
 
             <h2 className="font-display font-bold text-xl text-ink mb-4 px-1">
-              Ohodnocené podniky
+              Rated places
             </h2>
             {loading && (
-              <div className="text-center text-inksoft/60 py-8">Načítám...</div>
+              <div className="text-center text-inksoft/60 py-8">Loading...</div>
             )}
             {!loading && listRatings.length === 0 && (
               <div className="text-center py-16">
                 <WineOff size={40} className="mx-auto text-brand/40 mb-3" />
                 {ratings.length === 0 ? (
                   <>
-                    <p className="text-inksoft font-medium">Zatím žádná poncha</p>
+                    <p className="text-inksoft font-medium">No poncha yet</p>
                     <p className="text-inksoft/70 text-sm mt-1">
-                      Přepni na mapu a klikni na místo, kde jsi ponchu měl/a
+                      Switch to the map and tap a spot where you had poncha
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-inksoft font-medium">Žádné výsledky</p>
+                    <p className="text-inksoft font-medium">No results</p>
                     <p className="text-inksoft/70 text-sm mt-1">
-                      Zkus upravit hledání nebo filtr
+                      Try adjusting your search or filter
                     </p>
                   </>
                 )}

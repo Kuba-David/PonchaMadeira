@@ -28,9 +28,7 @@ function matchCount(ratings: PonchaRating[], types: string[], balance: string[])
 }
 
 function countLabel(n: number): string {
-  if (n === 1) return "1 podnik odpovídá filtru";
-  if (n < 5) return `${n} podniky odpovídají filtru`;
-  return `${n} podniků odpovídá filtru`;
+  return n === 1 ? "1 place matches the filter" : `${n} places match the filter`;
 }
 
 export function FilterSheet({
@@ -55,7 +53,7 @@ export function FilterSheet({
 
   return (
     <RatingSheet
-      title="Filtrovat"
+      title="Filter"
       onClose={onClose}
       action={
         hasFilters ? (
@@ -66,13 +64,13 @@ export function FilterSheet({
             }}
             className="text-sm font-semibold text-inksoft/60 hover:text-inksoft transition"
           >
-            Vymazat vše
+            Clear all
           </button>
         ) : undefined
       }
     >
       <div className="flex flex-col gap-8">
-        <Section label="Typ ponchy">
+        <Section label="Poncha type">
           <div className="flex flex-wrap gap-2">
             {PONCHA_TYPES.map((t) => (
               <Chip
@@ -85,7 +83,7 @@ export function FilterSheet({
           </div>
         </Section>
 
-        <Section label="Chuť">
+        <Section label="Taste">
           <div className="flex flex-wrap gap-2">
             {BALANCE_OPTIONS.map((b) => (
               <Chip
@@ -108,7 +106,7 @@ export function FilterSheet({
             }}
             className="w-full h-14 rounded-full bg-brand text-white font-bold text-base transition hover:opacity-90"
           >
-            Zobrazit výsledky
+            Show results
           </button>
         </div>
       </div>

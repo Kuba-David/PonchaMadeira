@@ -46,7 +46,7 @@ export function DetailRatingModal({ rating, onClose, onEdit, onUpdate }: Props) 
       action={
         <button
           onClick={onEdit}
-          aria-label="Upravit"
+          aria-label="Edit"
           className="text-sanddark hover:text-brand transition"
         >
           <Pencil size={20} />
@@ -61,7 +61,7 @@ export function DetailRatingModal({ rating, onClose, onEdit, onUpdate }: Props) 
           </p>
         )}
 
-        <Section label="Hodnocení">
+        <Section label="Rating">
           <div className="flex items-center gap-3">
             <RatingBadge
               value={rating.rating}
@@ -72,7 +72,7 @@ export function DetailRatingModal({ rating, onClose, onEdit, onUpdate }: Props) 
         </Section>
 
         {ponchaTypes.length > 0 && (
-          <Section label="Typ ponchy">
+          <Section label="Poncha type">
             <div className="flex flex-wrap gap-2">
               {ponchaTypes.map((t) => (
                 <span
@@ -87,7 +87,7 @@ export function DetailRatingModal({ rating, onClose, onEdit, onUpdate }: Props) 
         )}
 
         {tastes.length > 0 && (
-          <Section label="Chuť">
+          <Section label="Taste">
             <div className="flex flex-wrap gap-2">
               {tastes.map((t) => (
                 <span
@@ -102,7 +102,7 @@ export function DetailRatingModal({ rating, onClose, onEdit, onUpdate }: Props) 
         )}
 
         {rating.notes && (
-          <Section label="Poznámka">
+          <Section label="Note">
             <p className="text-[15px] text-ink leading-relaxed">
               &ldquo;{rating.notes}&rdquo;
             </p>

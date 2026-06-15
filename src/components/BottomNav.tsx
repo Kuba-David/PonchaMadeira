@@ -19,7 +19,7 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
           view === "map" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
-        Mapa
+        Map
       </button>
       <button
         onClick={() => onViewChange("list")}
@@ -27,11 +27,11 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
           view === "list" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
-        Seznam
+        List
       </button>
       <button
         onClick={onFilter}
-        aria-label="Filtrovat"
+        aria-label="Filter"
         className={`size-11 shrink-0 rounded-full bg-white shadow-sm flex items-center justify-center transition ${
           filterActive ? "text-brand" : "text-inksoft hover:text-brand"
         }`}

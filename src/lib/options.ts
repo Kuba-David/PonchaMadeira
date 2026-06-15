@@ -6,4 +6,4 @@ export const PONCHA_TYPES = [
   "Other",
 ];
 
-export const BALANCE_OPTIONS = ["Kyselá", "Sladká", "Alkoholová", "Vyvážená"];
+export const BALANCE_OPTIONS = ["Sour", "Sweet", "Boozy", "Balanced"];

@@ -7,7 +7,7 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   title: "Best Poncha",
-  description: "Hodnoť ponchu po celé Madeiře",
+  description: "Rate poncha all over Madeira",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="cs" className={`${geist.variable} ${outfit.variable} h-full`}>
+    <html lang="en" className={`${geist.variable} ${outfit.variable} h-full`}>
       <body className="h-full antialiased font-sans">{children}</body>
     </html>
   );
