@@ -121,14 +121,58 @@ export function PonchaMap({
               ["linear"],
               ["zoom"],
               13,
-              2.5,
+              7,
               16,
-              4.5,
+              13,
             ],
             "circle-color": "#d35400",
             "circle-stroke-color": "#ffffff",
             "circle-stroke-width": 1.5,
-            "circle-opacity": 0.9,
+            "circle-opacity": 0.95,
+          }}
+        />
+        <Layer
+          id="poi-fd-icons"
+          type="symbol"
+          source-layer="poi_label"
+          minzoom={13}
+          filter={[
+            "all",
+            ["==", ["get", "class"], "food_and_drink"],
+            [
+              "match",
+              ["get", "maki"],
+              ["restaurant", "bar", "cafe", "beer", "fast-food"],
+              true,
+              false,
+            ],
+          ]}
+          layout={{
+            "icon-image": [
+              "match",
+              ["get", "maki"],
+              "restaurant", "restaurant-15",
+              "bar", "bar-15",
+              "cafe", "cafe-15",
+              "beer", "beer-15",
+              "fast-food", "fast-food-15",
+              "restaurant-15",
+            ],
+            "icon-size": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              13,
+              0.55,
+              16,
+              0.85,
+            ],
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+          }}
+          paint={{
+            "icon-color": "#ffffff",
+            "icon-opacity": 1,
           }}
         />
         <Layer
@@ -150,13 +194,13 @@ export function PonchaMap({
           layout={{
             "text-field": ["get", "name"],
             "text-size": 11,
-            "text-offset": [0, 0.9],
+            "text-offset": [0, 1.4],
             "text-anchor": "top",
             "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
             "text-max-width": 8,
           }}
           paint={{
-            "text-color": "#635f58",
+            "text-color": "#d35400",
             "text-halo-color": "#fdfbf7",
             "text-halo-width": 1.4,
           }}
