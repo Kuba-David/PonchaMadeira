@@ -9,6 +9,7 @@ import Map, {
   type MapRef,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
 import type { PonchaRating } from "@/lib/supabase";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
@@ -34,6 +35,41 @@ function pinColor(r: number) {
   if (r >= 8) return "#4a7c59";
   if (r >= 5) return "#e8824a";
   return "#c0392b";
+}
+
+// Bílé ikonky POI (z lucide) – Standard styl nemá klasický Maki sprite,
+// proto si je vykreslíme na canvas a přidáme do mapy přes addImage.
+const svgIcon = (paths: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+
+const POI_ICONS: Record<string, string> = {
+  // bar – sklenka na víno
+  "poi-bar": svgIcon(
+    '<path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/>'
+  ),
+  // restaurace – příbor
+  "poi-restaurant": svgIcon(
+    '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>'
+  ),
+  // kavárna – šálek
+  "poi-cafe": svgIcon(
+    '<path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>'
+  ),
+  // pivo – sklenice piva
+  "poi-beer": svgIcon(
+    '<path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.57.5 2.5.5S9.44 3 11 3s2 .5 3 .5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z"/><path d="M5 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/>'
+  ),
+};
+
+function loadPoiIcons(map: mapboxgl.Map) {
+  for (const [id, svg] of Object.entries(POI_ICONS)) {
+    if (map.hasImage(id)) continue;
+    const img = new Image(48, 48);
+    img.onload = () => {
+      if (!map.hasImage(id)) map.addImage(id, img, { pixelRatio: 3 });
+    };
+    img.src = "data:image/svg+xml;base64," + btoa(svg);
+  }
 }
 
 export function PonchaMap({
@@ -63,6 +99,11 @@ export function PonchaMap({
       map?.setConfigProperty("basemap", "showPointOfInterestLabels", false);
     } catch {
       /* styl není Standard nebo má jiný import id – ignorujeme */
+    }
+    if (map) {
+      loadPoiIcons(map);
+      // Záloha: kdyby vrstva požádala o ikonu dřív, než ji stihneme přidat.
+      map.on("styleimagemissing", () => loadPoiIcons(map));
     }
   }, []);
 
@@ -151,28 +192,24 @@ export function PonchaMap({
             "icon-image": [
               "match",
               ["get", "maki"],
-              "restaurant", "restaurant-15",
-              "bar", "bar-15",
-              "cafe", "cafe-15",
-              "beer", "beer-15",
-              "fast-food", "fast-food-15",
-              "restaurant-15",
+              "bar", "poi-bar",
+              "cafe", "poi-cafe",
+              "beer", "poi-beer",
+              "restaurant", "poi-restaurant",
+              "fast-food", "poi-restaurant",
+              "poi-restaurant",
             ],
             "icon-size": [
               "interpolate",
               ["linear"],
               ["zoom"],
               13,
-              0.55,
+              0.45,
               16,
-              0.85,
+              0.7,
             ],
             "icon-allow-overlap": true,
             "icon-ignore-placement": true,
-          }}
-          paint={{
-            "icon-color": "#ffffff",
-            "icon-opacity": 1,
           }}
         />
         <Layer
