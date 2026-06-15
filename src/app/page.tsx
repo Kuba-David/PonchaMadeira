@@ -193,7 +193,7 @@ export default function Home() {
 
         {/* Náhledová karta vybraného místa (na mapě) */}
         {view === "map" && selected && (
-          <div className="absolute inset-x-0 z-20 flex justify-center px-4" style={{ bottom: 88 }}>
+          <div className="absolute inset-x-0 z-20 flex justify-center px-4" style={{ bottom: 96 }}>
             <div className="w-full max-w-[360px]">
               <ReviewPreviewCard
                 rating={selected}
