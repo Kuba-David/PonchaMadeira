@@ -26,7 +26,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
       <button
         type="button"
         onClick={() => setShowOptions((v) => !v)}
-        className="size-16 rounded-xl border border-sanddark bg-cream flex items-center justify-center overflow-hidden shrink-0 transition hover:opacity-90 cursor-pointer"
+        className="size-16 rounded-xl border border-sanddark bg-cream flex items-center justify-center overflow-hidden shrink-0 transition hover:opacity-90 cursor-pointer relative"
       >
         {displayUrl ? (
           <img
@@ -36,7 +36,10 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
             style={{ objectPosition: objectPosition ?? "50% 50%" }}
           />
         ) : (
-          <ImageIcon size={22} className="text-inksoft/50" />
+          <>
+            <ImageIcon size={22} className="text-inksoft/40" />
+            <span className="absolute top-1 right-1 size-4 rounded-full bg-inksoft/40 text-white text-[10px] font-bold flex items-center justify-center leading-none">+</span>
+          </>
         )}
       </button>
 

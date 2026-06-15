@@ -115,17 +115,37 @@ export function PonchaMap({
   const geolocateRef = useRef<GeolocateControlInstance | null>(null);
   const mapRef = useRef<MapRef | null>(null);
 
+  // Debounce: ignore the first click if a second follows within 280ms (= double-tap to zoom).
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastClickTimeRef = useRef(0);
+
+  // Touch state for double-tap-drag-to-zoom (Google Maps single-finger zoom).
+  const touchStateRef = useRef({ lastTapTime: 0, zoomActive: false, startY: 0, startZoom: 10 });
+  const cleanupTouchRef = useRef<(() => void) | null>(null);
+
   const handleClick = useCallback(
     (e: { lngLat: { lat: number; lng: number } }) => {
-      onMapClick(e.lngLat.lat, e.lngLat.lng);
+      const now = Date.now();
+      if (now - lastClickTimeRef.current < 300 && clickTimerRef.current) {
+        // Second click within 300ms = double-tap → cancel modal, let Mapbox zoom
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+        lastClickTimeRef.current = 0;
+        return;
+      }
+      lastClickTimeRef.current = now;
+      const lat = e.lngLat.lat;
+      const lng = e.lngLat.lng;
+      clickTimerRef.current = setTimeout(() => {
+        clickTimerRef.current = null;
+        onMapClick(lat, lng);
+      }, 280);
     },
     [onMapClick]
   );
 
   const handleLoad = useCallback(() => {
     geolocateRef.current?.trigger();
-    // Skryjeme POI popisky základní mapy (Standard) – vlastní si vykreslíme níž.
-    // Best-effort: pokud import nese jiný název, tiše přeskočíme (řeší se i ve Studiu).
     const map = mapRef.current?.getMap();
     try {
       map?.setConfigProperty("basemap", "showPointOfInterestLabels", false);
@@ -133,6 +153,57 @@ export function PonchaMap({
       /* styl není Standard nebo má jiný import id – ignorujeme */
     }
     if (map) loadPoiIcons(map);
+
+    // Double-tap-and-drag-to-zoom: detect second tap within 300ms, then track vertical drag.
+    const container = mapRef.current?.getContainer();
+    if (!container) return;
+    const ts = touchStateRef.current;
+
+    function onTouchStart(e: TouchEvent) {
+      if (e.touches.length !== 1) return;
+      const now = Date.now();
+      if (now - ts.lastTapTime < 300) {
+        ts.zoomActive = true;
+        ts.startY = e.touches[0].clientY;
+        ts.startZoom = mapRef.current?.getMap()?.getZoom() ?? 10;
+        // Cancel any pending single-tap modal open
+        if (clickTimerRef.current) {
+          clearTimeout(clickTimerRef.current);
+          clickTimerRef.current = null;
+        }
+        e.preventDefault(); // prevent click from firing on this second tap
+      }
+      ts.lastTapTime = now;
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      if (!ts.zoomActive || e.touches.length !== 1) return;
+      e.preventDefault();
+      const deltaY = ts.startY - e.touches[0].clientY; // drag up = zoom in
+      mapRef.current?.getMap()?.setZoom(Math.max(0, Math.min(22, ts.startZoom + deltaY / 60)));
+    }
+
+    function onTouchEnd() {
+      ts.zoomActive = false;
+    }
+
+    container.addEventListener("touchstart", onTouchStart, { passive: false });
+    container.addEventListener("touchmove", onTouchMove, { passive: false });
+    container.addEventListener("touchend", onTouchEnd);
+
+    cleanupTouchRef.current = () => {
+      container.removeEventListener("touchstart", onTouchStart);
+      container.removeEventListener("touchmove", onTouchMove);
+      container.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
+  // Cleanup touch listeners and pending click timer on unmount
+  useEffect(() => {
+    return () => {
+      cleanupTouchRef.current?.();
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    };
   }, []);
 
   // Přelet na místo po kliknutí na kartu v seznamu
