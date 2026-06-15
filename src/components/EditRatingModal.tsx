@@ -6,7 +6,7 @@ import { PhotoPicker } from "./PhotoPicker";
 import { PhotoPositionModal } from "./PhotoPositionModal";
 import { RatingSheet, Section, PlaceFields } from "./AddRatingModal";
 import { updateRating } from "@/lib/ratings";
-import { uploadPhoto, parsePhotoY } from "@/lib/photos";
+import { uploadPhoto, parsePhotoX, parsePhotoY } from "@/lib/photos";
 import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
 
@@ -180,9 +180,10 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
     {showPositionModal && photoDisplayUrl && (
       <PhotoPositionModal
         imageUrl={photoDisplayUrl}
+        initialX={parsePhotoX(photoPosition)}
         initialY={parsePhotoY(photoPosition)}
-        onConfirm={(y) => {
-          setPhotoPosition(`50% ${y.toFixed(1)}%`);
+        onConfirm={(x, y) => {
+          setPhotoPosition(`${x.toFixed(1)}% ${y.toFixed(1)}%`);
           setShowPositionModal(false);
         }}
         onCancel={() => setShowPositionModal(false)}

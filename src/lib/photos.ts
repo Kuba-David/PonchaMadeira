@@ -21,7 +21,13 @@ async function compress(file: File): Promise<Blob> {
   });
 }
 
-// Vytáhne svislou složku (Y %) z uloženého object-position řetězce "50% Y%".
+// Vytáhne X a Y složky z uloženého object-position řetězce "X% Y%".
+export function parsePhotoX(position: string | null | undefined): number {
+  if (!position) return 50;
+  const m = position.match(/([\d.]+)%/);
+  return m ? parseFloat(m[1]) : 50;
+}
+
 export function parsePhotoY(position: string | null | undefined): number {
   if (!position) return 50;
   const m = position.match(/[\d.]+%\s+([\d.]+)%/);

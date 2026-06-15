@@ -6,7 +6,7 @@ import { Chip } from "./Chip";
 import { PhotoPicker } from "./PhotoPicker";
 import { PhotoPositionModal } from "./PhotoPositionModal";
 import { addRating } from "@/lib/ratings";
-import { uploadPhoto, parsePhotoY } from "@/lib/photos";
+import { uploadPhoto, parsePhotoX, parsePhotoY } from "@/lib/photos";
 import { reverseGeocode } from "@/lib/geocode";
 import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
@@ -186,9 +186,10 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
     {showPositionModal && photoPreview && (
       <PhotoPositionModal
         imageUrl={photoPreview}
+        initialX={parsePhotoX(photoPosition)}
         initialY={parsePhotoY(photoPosition)}
-        onConfirm={(y) => {
-          setPhotoPosition(`50% ${y.toFixed(1)}%`);
+        onConfirm={(x, y) => {
+          setPhotoPosition(`${x.toFixed(1)}% ${y.toFixed(1)}%`);
           setShowPositionModal(false);
         }}
         onCancel={() => setShowPositionModal(false)}
