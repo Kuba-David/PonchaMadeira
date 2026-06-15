@@ -94,6 +94,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         latitude: lat,
         longitude: lng,
         photo_url,
+        photo_position: photo_url ? "50% 50%" : null,
       });
       onSaved(saved);
     } catch (err: unknown) {
@@ -181,12 +182,16 @@ export function RatingSheet({
   action,
   children,
   topImage,
+  initialImgY = 50,
+  onImgYChange,
 }: {
   title: string;
   onClose: () => void;
   action?: React.ReactNode;
   children: React.ReactNode;
   topImage?: string;
+  initialImgY?: number;
+  onImgYChange?: (pct: number) => void;
 }) {
   const startYRef = useRef<number | null>(null);
   const [dragY, setDragY] = useState(0);
@@ -195,8 +200,8 @@ export function RatingSheet({
 
   // Drag-to-reposition hero image
   const imgDragRef = useRef<{ y: number; startPct: number } | null>(null);
-  const [imgY, setImgY] = useState(50);
-  useEffect(() => { setImgY(50); }, [topImage]);
+  const [imgY, setImgY] = useState(initialImgY);
+  useEffect(() => { setImgY(initialImgY); }, [topImage, initialImgY]);
 
   useEffect(() => {
     const prev = document.body.style.overscrollBehavior;
@@ -266,7 +271,7 @@ export function RatingSheet({
                 const newY = Math.max(0, Math.min(100, imgDragRef.current.startPct - (e.clientY - imgDragRef.current.y) * 0.25));
                 setImgY(newY);
               }}
-              onPointerUp={() => { imgDragRef.current = null; }}
+              onPointerUp={() => { onImgYChange?.(imgY); imgDragRef.current = null; }}
               onPointerCancel={() => { imgDragRef.current = null; }}
             />
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/30 rounded-full px-2 py-0.5 pointer-events-none">

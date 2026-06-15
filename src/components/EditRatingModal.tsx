@@ -73,8 +73,14 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
     setError("");
     try {
       let photo_url: string | null | undefined = undefined;
-      if (photoFile) photo_url = await uploadPhoto(photoFile);
-      else if (removePhoto) photo_url = null;
+      let photo_position: string | null | undefined = undefined;
+      if (photoFile) {
+        photo_url = await uploadPhoto(photoFile);
+        photo_position = "50% 50%";
+      } else if (removePhoto) {
+        photo_url = null;
+        photo_position = null;
+      }
       const saved = await updateRating(rating.id, {
         place_name: placeName.trim(),
         address: address.trim() || null,
@@ -82,7 +88,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
         poncha_type: ponchaTypes.join(", ") || null,
         balance: taste.join(", ") || null,
         notes: notes.trim() || null,
-        ...(photo_url !== undefined ? { photo_url } : {}),
+        ...(photo_url !== undefined ? { photo_url, photo_position } : {}),
       });
       onSaved(saved);
     } catch (err: unknown) {

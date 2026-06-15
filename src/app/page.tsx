@@ -244,6 +244,7 @@ export default function Home() {
             setEditing(detail);
             setDetail(null);
           }}
+          onUpdate={handleUpdate}
         />
       )}
 
