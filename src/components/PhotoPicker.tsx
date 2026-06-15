@@ -1,13 +1,15 @@
 "use client";
 import { useRef, useState } from "react";
-import { Camera, ImageIcon, X } from "lucide-react";
+import { Camera, ImageIcon, X, MoveVertical } from "lucide-react";
 
 type Props = {
   displayUrl: string | null;
   onChange: (file: File | null) => void;
+  objectPosition?: string;
+  onReposition?: () => void;
 };
 
-export function PhotoPicker({ displayUrl, onChange }: Props) {
+export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition }: Props) {
   const [showOptions, setShowOptions] = useState(false);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -26,7 +28,12 @@ export function PhotoPicker({ displayUrl, onChange }: Props) {
         className="w-full h-[100px] rounded-xl border border-sanddark bg-cream flex items-center justify-center overflow-hidden transition hover:opacity-90 cursor-pointer"
       >
         {displayUrl ? (
-          <img src={displayUrl} alt="" className="w-full h-full object-cover" />
+          <img
+            src={displayUrl}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ objectPosition: objectPosition ?? "50% 50%" }}
+          />
         ) : (
           <ImageIcon size={28} className="text-inksoft/50" />
         )}
@@ -39,6 +46,16 @@ export function PhotoPicker({ displayUrl, onChange }: Props) {
           className="absolute top-2 right-2 size-7 rounded-full bg-black/50 flex items-center justify-center"
         >
           <X size={14} className="text-white" />
+        </button>
+      )}
+
+      {displayUrl && onReposition && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onReposition(); }}
+          className="absolute bottom-2 right-2 h-7 pl-2 pr-2.5 rounded-full bg-black/50 flex items-center gap-1 text-white text-[11px] font-medium"
+        >
+          <MoveVertical size={12} /> Position
         </button>
       )}
 

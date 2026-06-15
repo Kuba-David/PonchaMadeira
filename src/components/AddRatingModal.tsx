@@ -4,8 +4,9 @@ import { Loader2 } from "lucide-react";
 import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
 import { PhotoPicker } from "./PhotoPicker";
+import { PhotoPositionModal } from "./PhotoPositionModal";
 import { addRating } from "@/lib/ratings";
-import { uploadPhoto } from "@/lib/photos";
+import { uploadPhoto, parsePhotoY } from "@/lib/photos";
 import { reverseGeocode } from "@/lib/geocode";
 import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
@@ -26,6 +27,8 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoPosition, setPhotoPosition] = useState("50% 50%");
+  const [showPositionModal, setShowPositionModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [geoLoading, setGeoLoading] = useState(true);
@@ -55,6 +58,8 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
     if (file) {
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
+      setPhotoPosition("50% 50%");
+      setShowPositionModal(true);
     } else {
       setPhotoFile(null);
       setPhotoPreview(null);
@@ -94,7 +99,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         latitude: lat,
         longitude: lng,
         photo_url,
-        photo_position: photo_url ? "50% 50%" : null,
+        photo_position: photo_url ? photoPosition : null,
       });
       onSaved(saved);
     } catch (err: unknown) {
@@ -105,6 +110,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   }
 
   return (
+    <>
     <RatingSheet title="Rate poncha" onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <PlaceFields
@@ -147,7 +153,12 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         </Section>
 
         <Section label="Photos">
-          <PhotoPicker displayUrl={photoPreview} onChange={handlePhotoChange} />
+          <PhotoPicker
+            displayUrl={photoPreview}
+            onChange={handlePhotoChange}
+            objectPosition={photoPosition}
+            onReposition={() => setShowPositionModal(true)}
+          />
         </Section>
 
         <Section label="Note">
@@ -171,6 +182,19 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         </button>
       </form>
     </RatingSheet>
+
+    {showPositionModal && photoPreview && (
+      <PhotoPositionModal
+        imageUrl={photoPreview}
+        initialY={parsePhotoY(photoPosition)}
+        onConfirm={(y) => {
+          setPhotoPosition(`50% ${y.toFixed(1)}%`);
+          setShowPositionModal(false);
+        }}
+        onCancel={() => setShowPositionModal(false)}
+      />
+    )}
+    </>
   );
 }
 
@@ -182,26 +206,19 @@ export function RatingSheet({
   action,
   children,
   topImage,
-  initialImgY = 50,
-  onImgYChange,
+  imgPosition,
 }: {
   title: string;
   onClose: () => void;
   action?: React.ReactNode;
   children: React.ReactNode;
   topImage?: string;
-  initialImgY?: number;
-  onImgYChange?: (pct: number) => void;
+  imgPosition?: string;
 }) {
   const startYRef = useRef<number | null>(null);
   const [dragY, setDragY] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [closing, setClosing] = useState(false);
-
-  // Drag-to-reposition hero image
-  const imgDragRef = useRef<{ y: number; startPct: number } | null>(null);
-  const [imgY, setImgY] = useState(initialImgY);
-  useEffect(() => { setImgY(initialImgY); }, [topImage, initialImgY]);
 
   useEffect(() => {
     const prev = document.body.style.overscrollBehavior;
@@ -253,42 +270,29 @@ export function RatingSheet({
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Úchyt pro zavření – vždy nahoře, zavíráme kartu odshora */}
+        <div
+          className="flex justify-center pt-2.5 pb-2 cursor-grab shrink-0"
+          style={{ touchAction: "none" }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="h-1 w-10 rounded-full bg-sanddark" />
+        </div>
+
         {topImage && (
           <div className="relative w-full shrink-0" style={{ height: 240 }}>
             <img
               src={topImage}
               alt=""
-              draggable={false}
-              className="w-full h-full object-cover select-none"
-              style={{ objectPosition: `50% ${imgY}%`, touchAction: "none", cursor: "ns-resize" }}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                imgDragRef.current = { y: e.clientY, startPct: imgY };
-                e.currentTarget.setPointerCapture(e.pointerId);
-              }}
-              onPointerMove={(e) => {
-                if (!imgDragRef.current) return;
-                const newY = Math.max(0, Math.min(100, imgDragRef.current.startPct - (e.clientY - imgDragRef.current.y) * 0.25));
-                setImgY(newY);
-              }}
-              onPointerUp={() => { onImgYChange?.(imgY); imgDragRef.current = null; }}
-              onPointerCancel={() => { imgDragRef.current = null; }}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: imgPosition ?? "50% 50%" }}
             />
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/30 rounded-full px-2 py-0.5 pointer-events-none">
-              <span className="text-white/80 text-[10px] font-medium">↕ drag to reposition</span>
-            </div>
           </div>
         )}
-        <div className="overflow-y-auto flex-1 px-6 pt-3 pb-10">
-          <div
-            className="flex justify-center pt-1 pb-4 cursor-grab"
-            style={{ touchAction: "none", margin: "0 -24px" }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            <div className="h-1 w-10 rounded-full bg-sanddark" />
-          </div>
+
+        <div className="overflow-y-auto flex-1 px-6 pt-4 pb-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display font-bold text-2xl text-ink">{title}</h2>
             {action}
