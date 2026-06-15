@@ -14,10 +14,14 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
     <div className="bg-white rounded-2xl shadow-xl p-4 flex gap-3 items-start">
       <button
         onClick={onDetail}
-        className="size-14 rounded-xl bg-cream flex items-center justify-center text-brand shrink-0 hover:bg-sanddark transition"
+        className="size-14 rounded-xl overflow-hidden bg-cream shrink-0 flex items-center justify-center text-brand hover:opacity-90 transition"
         aria-label="Zobrazit detail"
       >
-        <WineOff size={26} />
+        {rating.photo_url ? (
+          <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <WineOff size={26} />
+        )}
       </button>
 
       <button onClick={onDetail} className="flex-1 min-w-0 text-left">

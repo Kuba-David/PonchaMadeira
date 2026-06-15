@@ -193,6 +193,11 @@ export function RatingSheet({
   const [dragging, setDragging] = useState(false);
   const [closing, setClosing] = useState(false);
 
+  // Drag-to-reposition hero image
+  const imgDragRef = useRef<{ y: number; startPct: number } | null>(null);
+  const [imgY, setImgY] = useState(50);
+  useEffect(() => { setImgY(50); }, [topImage]);
+
   useEffect(() => {
     const prev = document.body.style.overscrollBehavior;
     document.body.style.overscrollBehavior = "none";
@@ -244,12 +249,30 @@ export function RatingSheet({
         onClick={(e) => e.stopPropagation()}
       >
         {topImage && (
-          <img
-            src={topImage}
-            alt=""
-            className="w-full shrink-0 object-cover"
-            style={{ height: 220 }}
-          />
+          <div className="relative w-full shrink-0" style={{ height: 240 }}>
+            <img
+              src={topImage}
+              alt=""
+              draggable={false}
+              className="w-full h-full object-cover select-none"
+              style={{ objectPosition: `50% ${imgY}%`, touchAction: "none", cursor: "ns-resize" }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                imgDragRef.current = { y: e.clientY, startPct: imgY };
+                e.currentTarget.setPointerCapture(e.pointerId);
+              }}
+              onPointerMove={(e) => {
+                if (!imgDragRef.current) return;
+                const newY = Math.max(0, Math.min(100, imgDragRef.current.startPct - (e.clientY - imgDragRef.current.y) * 0.25));
+                setImgY(newY);
+              }}
+              onPointerUp={() => { imgDragRef.current = null; }}
+              onPointerCancel={() => { imgDragRef.current = null; }}
+            />
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/30 rounded-full px-2 py-0.5 pointer-events-none">
+              <span className="text-white/80 text-[10px] font-medium">↕ přetáhni pro výřez</span>
+            </div>
+          </div>
         )}
         <div className="overflow-y-auto flex-1 px-6 pt-3 pb-10">
           <div

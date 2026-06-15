@@ -34,8 +34,12 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
         onClick={onClick}
         className="bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start cursor-pointer hover:shadow-md transition"
       >
-        <div className="size-14 rounded-xl bg-cream flex items-center justify-center text-brand shrink-0">
-          <WineOff size={26} />
+        <div className="size-14 rounded-xl overflow-hidden bg-cream flex items-center justify-center text-brand shrink-0">
+          {rating.photo_url ? (
+            <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <WineOff size={26} />
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
