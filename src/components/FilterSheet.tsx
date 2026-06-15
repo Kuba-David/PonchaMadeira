@@ -61,8 +61,8 @@ export function FilterSheet({
         hasFilters ? (
           <button
             onClick={() => {
-              setTypes([]);
-              setBalance([]);
+              onApply([], []);
+              onClose();
             }}
             className="text-sm font-semibold text-inksoft/60 hover:text-inksoft transition"
           >
