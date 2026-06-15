@@ -11,6 +11,11 @@ import type { PonchaRating } from "@/lib/supabase";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
+// Vlastní styl mapy z Mapbox Studio (lze přepsat přes env proměnnou)
+const MAPBOX_STYLE =
+  process.env.NEXT_PUBLIC_MAPBOX_STYLE ||
+  "mapbox://styles/kubadavid/cmqe0hsjo005n01qz0n6f1m6u";
+
 // Madeira center – výchozí pohled, než zjistíme polohu uživatele
 const INITIAL_VIEW = { longitude: -16.9, latitude: 32.75, zoom: 10 };
 
@@ -70,7 +75,7 @@ export function PonchaMap({
       mapboxAccessToken={MAPBOX_TOKEN}
       initialViewState={INITIAL_VIEW}
       style={{ width: "100%", height: "100%" }}
-      mapStyle="mapbox://styles/mapbox/streets-v12"
+      mapStyle={MAPBOX_STYLE}
       onClick={handleClick}
       onLoad={handleLoad}
       cursor="crosshair"
