@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import Map, {
   Marker,
+  Source,
+  Layer,
   GeolocateControl,
   type GeolocateControlInstance,
   type MapRef,
@@ -54,6 +56,14 @@ export function PonchaMap({
 
   const handleLoad = useCallback(() => {
     geolocateRef.current?.trigger();
+    // Skryjeme POI popisky základní mapy (Standard) – vlastní si vykreslíme níž.
+    // Best-effort: pokud import nese jiný název, tiše přeskočíme (řeší se i ve Studiu).
+    const map = mapRef.current?.getMap();
+    try {
+      map?.setConfigProperty("basemap", "showPointOfInterestLabels", false);
+    } catch {
+      /* styl není Standard nebo má jiný import id – ignorujeme */
+    }
   }, []);
 
   // Přelet na místo po kliknutí na kartu v seznamu
@@ -86,6 +96,72 @@ export function PonchaMap({
         trackUserLocation
         positionOptions={{ enableHighAccuracy: true }}
       />
+
+      {/* Vlastní POI – jen bary, restaurace a kavárny z Mapbox Streets dat */}
+      <Source id="poi-src" type="vector" url="mapbox://mapbox.mapbox-streets-v8">
+        <Layer
+          id="poi-fd-dots"
+          type="circle"
+          source-layer="poi_label"
+          minzoom={13}
+          filter={[
+            "all",
+            ["==", ["get", "class"], "food_and_drink"],
+            [
+              "match",
+              ["get", "maki"],
+              ["restaurant", "bar", "cafe", "beer", "fast-food"],
+              true,
+              false,
+            ],
+          ]}
+          paint={{
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              13,
+              2.5,
+              16,
+              4.5,
+            ],
+            "circle-color": "#d35400",
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 1.5,
+            "circle-opacity": 0.9,
+          }}
+        />
+        <Layer
+          id="poi-fd-labels"
+          type="symbol"
+          source-layer="poi_label"
+          minzoom={14}
+          filter={[
+            "all",
+            ["==", ["get", "class"], "food_and_drink"],
+            [
+              "match",
+              ["get", "maki"],
+              ["restaurant", "bar", "cafe", "beer", "fast-food"],
+              true,
+              false,
+            ],
+          ]}
+          layout={{
+            "text-field": ["get", "name"],
+            "text-size": 11,
+            "text-offset": [0, 0.9],
+            "text-anchor": "top",
+            "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+            "text-max-width": 8,
+          }}
+          paint={{
+            "text-color": "#635f58",
+            "text-halo-color": "#fdfbf7",
+            "text-halo-width": 1.4,
+          }}
+        />
+      </Source>
 
       {ratings.map((r) => {
         const size = Math.min(44, Math.max(28, 22 + r.rating * 2));
