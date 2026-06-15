@@ -22,6 +22,7 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
     <RatingSheet
       title={rating.place_name}
       onClose={onClose}
+      topImage={rating.photo_url ?? undefined}
       action={
         <button
           onClick={onEdit}

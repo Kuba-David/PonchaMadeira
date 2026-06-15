@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
+import { PhotoPicker } from "./PhotoPicker";
 import { addRating } from "@/lib/ratings";
+import { uploadPhoto } from "@/lib/photos";
 import { reverseGeocode } from "@/lib/geocode";
 import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
@@ -22,6 +24,8 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   const [ponchaTypes, setPonchaTypes] = useState<string[]>([]);
   const [taste, setTaste] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [geoLoading, setGeoLoading] = useState(true);
@@ -41,6 +45,21 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
       active = false;
     };
   }, [lat, lng]);
+
+  useEffect(() => {
+    return () => { if (photoPreview) URL.revokeObjectURL(photoPreview); };
+  }, [photoPreview]);
+
+  function handlePhotoChange(file: File | null) {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    } else {
+      setPhotoFile(null);
+      setPhotoPreview(null);
+    }
+  }
 
   function toggleType(t: string) {
     setPonchaTypes((prev) =>
@@ -63,6 +82,8 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
     setSaving(true);
     setError("");
     try {
+      let photo_url: string | null = null;
+      if (photoFile) photo_url = await uploadPhoto(photoFile);
       const saved = await addRating({
         place_name: placeName.trim(),
         address: address.trim() || null,
@@ -72,7 +93,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         notes: notes.trim() || null,
         latitude: lat,
         longitude: lng,
-        photo_url: null,
+        photo_url,
       });
       onSaved(saved);
     } catch (err: unknown) {
@@ -124,6 +145,10 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           </div>
         </Section>
 
+        <Section label="Obrázky">
+          <PhotoPicker displayUrl={photoPreview} onChange={handlePhotoChange} />
+        </Section>
+
         <Section label="Poznámka">
           <textarea
             value={notes}
@@ -141,7 +166,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           disabled={saving}
           className="h-14 rounded-full bg-brand text-white font-bold text-base disabled:opacity-50 transition"
         >
-          {saving ? "Ukládám..." : "Uložit hodnocení"}
+          {saving ? (photoFile ? "Nahrávám foto…" : "Ukládám...") : "Uložit hodnocení"}
         </button>
       </form>
     </RatingSheet>
@@ -155,11 +180,13 @@ export function RatingSheet({
   onClose,
   action,
   children,
+  topImage,
 }: {
   title: string;
   onClose: () => void;
   action?: React.ReactNode;
   children: React.ReactNode;
+  topImage?: string;
 }) {
   const startYRef = useRef<number | null>(null);
   const [dragY, setDragY] = useState(0);
@@ -209,27 +236,37 @@ export function RatingSheet({
       onClick={onClose}
     >
       <div
-        className="bg-cream w-full max-w-md rounded-t-3xl px-6 pt-3 pb-10 max-h-[92dvh] overflow-y-auto shadow-[0_-4px_20px_rgba(0,0,0,0.2)]"
+        className="bg-cream w-full max-w-md rounded-t-3xl max-h-[92dvh] flex flex-col overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.2)]"
         style={{
           transform: `translateY(${dragY}px)`,
           transition: dragging ? "none" : "transform 0.26s cubic-bezier(0.32,0.72,0,1)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          className="flex justify-center pt-1 pb-4 cursor-grab"
-          style={{ touchAction: "none", margin: "0 -24px" }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="h-1 w-10 rounded-full bg-sanddark" />
+        {topImage && (
+          <img
+            src={topImage}
+            alt=""
+            className="w-full shrink-0 object-cover"
+            style={{ height: 220 }}
+          />
+        )}
+        <div className="overflow-y-auto flex-1 px-6 pt-3 pb-10">
+          <div
+            className="flex justify-center pt-1 pb-4 cursor-grab"
+            style={{ touchAction: "none", margin: "0 -24px" }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="h-1 w-10 rounded-full bg-sanddark" />
+          </div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display font-bold text-2xl text-ink">{title}</h2>
+            {action}
+          </div>
+          {children}
         </div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display font-bold text-2xl text-ink">{title}</h2>
-          {action}
-        </div>
-        {children}
       </div>
     </div>
   );

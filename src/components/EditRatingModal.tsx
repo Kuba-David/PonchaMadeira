@@ -1,9 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
+import { PhotoPicker } from "./PhotoPicker";
 import { RatingSheet, Section, PlaceFields } from "./AddRatingModal";
 import { updateRating } from "@/lib/ratings";
+import { uploadPhoto } from "@/lib/photos";
 import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
 
@@ -24,8 +26,30 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
     rating.balance ? rating.balance.split(", ").filter(Boolean) : []
   );
   const [notes, setNotes] = useState(rating.notes ?? "");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const photoDisplayUrl = photoPreview ?? (removePhoto ? null : rating.photo_url);
+
+  useEffect(() => {
+    return () => { if (photoPreview) URL.revokeObjectURL(photoPreview); };
+  }, [photoPreview]);
+
+  function handlePhotoChange(file: File | null) {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setRemovePhoto(false);
+    } else {
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      setRemovePhoto(true);
+    }
+  }
 
   function toggleType(t: string) {
     setPonchaTypes((prev) =>
@@ -48,6 +72,9 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
     setSaving(true);
     setError("");
     try {
+      let photo_url: string | null | undefined = undefined;
+      if (photoFile) photo_url = await uploadPhoto(photoFile);
+      else if (removePhoto) photo_url = null;
       const saved = await updateRating(rating.id, {
         place_name: placeName.trim(),
         address: address.trim() || null,
@@ -55,6 +82,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
         poncha_type: ponchaTypes.join(", ") || null,
         balance: taste.join(", ") || null,
         notes: notes.trim() || null,
+        ...(photo_url !== undefined ? { photo_url } : {}),
       });
       onSaved(saved);
     } catch (err: unknown) {
@@ -106,6 +134,10 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           </div>
         </Section>
 
+        <Section label="Obrázky">
+          <PhotoPicker displayUrl={photoDisplayUrl} onChange={handlePhotoChange} />
+        </Section>
+
         <Section label="Poznámka">
           <textarea
             value={notes}
@@ -123,7 +155,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           disabled={saving}
           className="h-14 rounded-full bg-brand text-white font-bold text-base disabled:opacity-50 transition"
         >
-          {saving ? "Ukládám..." : "Uložit změny"}
+          {saving ? (photoFile ? "Nahrávám foto…" : "Ukládám...") : "Uložit změny"}
         </button>
       </form>
     </RatingSheet>
