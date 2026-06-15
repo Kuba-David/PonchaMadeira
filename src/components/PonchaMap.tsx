@@ -69,18 +69,37 @@ const POI_ICON_PATHS: Record<string, string[]> = {
 function loadPoiIcons(map: mapboxgl.Map) {
   for (const [id, paths] of Object.entries(POI_ICON_PATHS)) {
     if (map.hasImage(id)) continue;
-    const size = 48;
+    // Kreslíme oranžový kruh + bílou ikonu do jednoho canvas obrazu,
+    // aby Mapbox vždy renderoval kruh a ikonu jako jeden atomický celek.
+    const size = 64;
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext("2d")!;
-    const scale = size / 24;
-    ctx.scale(scale, scale);
+
+    // Oranžový kruh s bílým okrajem
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, 28, 0, Math.PI * 2);
+    ctx.fillStyle = "#d35400";
+    ctx.fill();
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2.2 / scale;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Bílá ikona centrovaná uvnitř kruhu (lucide 24x24 → škála na 32px)
+    const iconPx = 32;
+    const offset = (size - iconPx) / 2;
+    const iconScale = iconPx / 24;
+    ctx.save();
+    ctx.translate(offset, offset);
+    ctx.scale(iconScale, iconScale);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2.2 / iconScale;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     for (const d of paths) ctx.stroke(new Path2D(d));
+    ctx.restore();
+
     map.addImage(id, ctx.getImageData(0, 0, size, size), { pixelRatio: 2 });
   }
 }
@@ -150,39 +169,7 @@ export function PonchaMap({
       {/* Vlastní POI – jen bary, restaurace a kavárny z Mapbox Streets dat */}
       <Source id="poi-src" type="vector" url="mapbox://mapbox.mapbox-streets-v8">
         <Layer
-          id="poi-fd-dots"
-          type="circle"
-          source-layer="poi_label"
-          minzoom={13}
-          filter={[
-            "all",
-            ["==", ["get", "class"], "food_and_drink"],
-            [
-              "match",
-              ["get", "maki"],
-              ["restaurant", "bar", "cafe", "beer", "fast-food"],
-              true,
-              false,
-            ],
-          ]}
-          paint={{
-            "circle-radius": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              13,
-              7,
-              16,
-              13,
-            ],
-            "circle-color": "#d35400",
-            "circle-stroke-color": "#ffffff",
-            "circle-stroke-width": 1.5,
-            "circle-opacity": 0.95,
-          }}
-        />
-        <Layer
-          id="poi-fd-icons"
+          id="poi-fd-markers"
           type="symbol"
           source-layer="poi_label"
           minzoom={13}
@@ -213,9 +200,9 @@ export function PonchaMap({
               ["linear"],
               ["zoom"],
               13,
-              0.45,
+              0.48,
               16,
-              0.7,
+              0.82,
             ],
             "icon-allow-overlap": true,
             "icon-ignore-placement": true,
