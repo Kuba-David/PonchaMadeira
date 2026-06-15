@@ -6,7 +6,7 @@ import { Chip } from "./Chip";
 import { PhotoPicker } from "./PhotoPicker";
 import { PhotoPositionModal } from "./PhotoPositionModal";
 import { addRating } from "@/lib/ratings";
-import { uploadPhoto, parsePhotoX, parsePhotoY } from "@/lib/photos";
+import { uploadPhoto, parsePhotoX, parsePhotoY, parsePhotoZoom } from "@/lib/photos";
 import { reverseGeocode } from "@/lib/geocode";
 import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
 import type { PonchaRating } from "@/lib/supabase";
@@ -188,8 +188,9 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
         imageUrl={photoPreview}
         initialX={parsePhotoX(photoPosition)}
         initialY={parsePhotoY(photoPosition)}
-        onConfirm={(x, y) => {
-          setPhotoPosition(`${x.toFixed(1)}% ${y.toFixed(1)}%`);
+        initialZoom={parsePhotoZoom(photoPosition)}
+        onConfirm={(x, y, z) => {
+          setPhotoPosition(`${x.toFixed(1)}% ${y.toFixed(1)}% ${z.toFixed(3)}`);
           setShowPositionModal(false);
         }}
         onCancel={() => setShowPositionModal(false)}
@@ -200,6 +201,21 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
 }
 
 /* ── Sdílené prvky panelu ── */
+
+// Extrahuje "X% Y%" část z formátu "X% Y% ZOOM" (kompatibilní s oběma formáty).
+function parseObjPos(position: string | undefined): string {
+  if (!position) return "50% 50%";
+  const m = position.match(/([\d.]+%)\s+([\d.]+%)/);
+  return m ? `${m[1]} ${m[2]}` : "50% 50%";
+}
+
+function parseZoomVal(position: string | undefined): number {
+  if (!position) return 1;
+  const parts = position.trim().split(/\s+/);
+  if (parts.length < 3) return 1;
+  const z = parseFloat(parts[2]);
+  return isNaN(z) || z < 1 ? 1 : z;
+}
 
 export function RatingSheet({
   title,
@@ -283,12 +299,16 @@ export function RatingSheet({
         </div>
 
         {topImage && (
-          <div className="relative w-full shrink-0" style={{ height: 240 }}>
+          <div className="relative w-full shrink-0 overflow-hidden" style={{ height: 240 }}>
             <img
               src={topImage}
               alt=""
               className="w-full h-full object-cover"
-              style={{ objectPosition: imgPosition ?? "50% 50%" }}
+              style={{
+                objectPosition: parseObjPos(imgPosition),
+                transform: `scale(${parseZoomVal(imgPosition)})`,
+                transformOrigin: parseObjPos(imgPosition),
+              }}
             />
           </div>
         )}
