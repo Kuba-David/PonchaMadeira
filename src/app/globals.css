@@ -17,6 +17,12 @@
   --color-pinred: #d30000;
 }
 
+html,
+body {
+  /* Zakázat refresh přetažením dolů (pull-to-refresh) v celé aplikaci */
+  overscroll-behavior-y: none;
+}
+
 body {
   background: var(--color-sand);
   color: var(--color-ink);
