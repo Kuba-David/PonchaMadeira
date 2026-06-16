@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { Camera, ImageIcon, X, MoveVertical } from "lucide-react";
+import { Camera, ImageIcon, ImagePlus, Scaling, Trash2 } from "lucide-react";
 
 type Props = {
   displayUrl: string | null;
@@ -20,13 +20,15 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
     e.target.value = "";
   }
 
+  const hasPhoto = !!displayUrl;
+
   return (
-    <div className="relative flex items-center gap-3">
-      {/* Malý čtverec – stejný styl jako náhledy v kartách */}
+    <div className="relative flex items-start gap-3">
+      {/* Čtverec pro přidání/náhled fotky (100×100 dle Figma) */}
       <button
         type="button"
         onClick={() => setShowOptions((v) => !v)}
-        className="size-16 rounded-xl border border-sanddark bg-cream flex items-center justify-center overflow-hidden shrink-0 transition hover:opacity-90 cursor-pointer relative"
+        className="size-[100px] rounded-xl border border-sanddark bg-cream flex items-center justify-center overflow-hidden shrink-0 transition hover:opacity-90 cursor-pointer"
       >
         {displayUrl ? (
           <img
@@ -36,36 +38,33 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
             style={{ objectPosition: objectPosition ?? "50% 50%" }}
           />
         ) : (
-          <>
-            <ImageIcon size={22} className="text-inksoft/40" />
-            <span className="absolute top-1 right-1 size-4 rounded-full bg-inksoft/40 text-white text-[10px] font-bold flex items-center justify-center leading-none">+</span>
-          </>
+          <ImagePlus size={24} className="text-inksoft/50" />
         )}
       </button>
 
-      {/* Akce vedle čtverce */}
-      {displayUrl ? (
-        <div className="flex items-center gap-2">
-          {onReposition && (
-            <button
-              type="button"
-              onClick={onReposition}
-              className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-cream border border-sanddark text-[13px] font-semibold text-inksoft transition hover:border-brandlight"
-            >
-              <MoveVertical size={14} /> Position
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => onChange(null)}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-cream border border-sanddark text-[13px] font-semibold text-inksoft transition hover:text-pinred hover:border-pinred/40"
-          >
-            <X size={14} /> Remove
-          </button>
-        </div>
-      ) : (
-        <span className="text-[14px] text-inksoft/70">Add a photo</span>
-      )}
+      {/* Akce vedle čtverce – Position / Remove (ztlumené, dokud není fotka) */}
+      <div className="flex flex-col gap-2 justify-center self-stretch">
+        <button
+          type="button"
+          disabled={!hasPhoto}
+          onClick={onReposition}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[14px] font-semibold text-inksoft transition ${
+            hasPhoto ? "hover:bg-cream" : "opacity-50 cursor-default"
+          }`}
+        >
+          <Scaling size={18} /> Position
+        </button>
+        <button
+          type="button"
+          disabled={!hasPhoto}
+          onClick={() => onChange(null)}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[14px] font-semibold text-inksoft transition ${
+            hasPhoto ? "hover:text-pinred" : "opacity-50 cursor-default"
+          }`}
+        >
+          <Trash2 size={18} /> Remove
+        </button>
+      </div>
 
       {/* Volba zdroje fotky */}
       {showOptions && (

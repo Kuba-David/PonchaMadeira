@@ -34,7 +34,7 @@ type Props = {
 function pinColor(r: number) {
   if (r >= 8) return "#4a7c59";
   if (r >= 5) return "#e8824a";
-  return "#c0392b";
+  return "#d30000";
 }
 
 // Bílé ikonky POI vykreslené synchronně na canvas přes Path2D (lucide cesty).

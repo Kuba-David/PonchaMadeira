@@ -1,5 +1,5 @@
 "use client";
-import { WineOff, MapPin, X } from "lucide-react";
+import { CameraOff, MapPin, X } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
 
@@ -14,13 +14,13 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
     <div className="bg-white rounded-2xl shadow-xl p-4 flex gap-3 items-start">
       <button
         onClick={onDetail}
-        className="size-14 rounded-xl overflow-hidden bg-cream shrink-0 flex items-center justify-center text-brand hover:opacity-90 transition"
+        className="size-14 rounded-xl overflow-hidden bg-cream shrink-0 flex items-center justify-center text-inksoft hover:opacity-90 transition"
         aria-label="View detail"
       >
         {rating.photo_url ? (
           <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
         ) : (
-          <WineOff size={26} />
+          <CameraOff size={20} />
         )}
       </button>
 
@@ -34,7 +34,7 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
 
         {rating.address && (
           <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
-            <MapPin size={12} className="shrink-0" />
+            <MapPin size={12} className="shrink-0 text-brand" />
             <span className="truncate">{rating.address}</span>
           </p>
         )}

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { WineOff, MapPin, Trash2, Pencil } from "lucide-react";
+import { CameraOff, MapPin, Trash2, SquarePen } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
 import { deleteRating } from "@/lib/ratings";
@@ -34,11 +34,11 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
         onClick={onClick}
         className="bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start cursor-pointer hover:shadow-md transition"
       >
-        <div className="size-14 rounded-xl overflow-hidden bg-cream flex items-center justify-center text-brand shrink-0">
+        <div className="size-14 rounded-xl overflow-hidden bg-cream flex items-center justify-center text-inksoft shrink-0">
           {rating.photo_url ? (
             <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <WineOff size={26} />
+            <CameraOff size={20} />
           )}
         </div>
 
@@ -52,7 +52,7 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
 
           {rating.address && (
             <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
-              <MapPin size={12} className="shrink-0" />
+              <MapPin size={12} className="shrink-0 text-brand" />
               <span className="truncate">{rating.address}</span>
             </p>
           )}
@@ -75,7 +75,7 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
               aria-label="Edit"
               className="text-sanddark hover:text-brand transition"
             >
-              <Pencil size={15} />
+              <SquarePen size={15} />
             </button>
             <button
               onClick={handleDelete}
