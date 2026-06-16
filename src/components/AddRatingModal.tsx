@@ -287,18 +287,7 @@ export function RatingSheet({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Úchyt pro zavření – vždy nahoře, zavíráme kartu odshora */}
-        <div
-          className="flex justify-center pt-2.5 pb-2 cursor-grab shrink-0"
-          style={{ touchAction: "none" }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="h-1 w-10 rounded-full bg-sanddark" />
-        </div>
-
-        {topImage && (
+        {topImage ? (
           <div className="relative w-full shrink-0 overflow-hidden" style={{ height: 240 }}>
             <img
               src={topImage}
@@ -310,6 +299,26 @@ export function RatingSheet({
                 transformOrigin: parseObjPos(imgPosition),
               }}
             />
+            {/* Úchyt pro zavření – přes fotku, zavíráme kartu odshora */}
+            <div
+              className="absolute top-0 left-0 w-full flex justify-center pt-2.5 pb-4 cursor-grab"
+              style={{ touchAction: "none" }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="h-1 w-10 rounded-full bg-white/80 shadow-sm" />
+            </div>
+          </div>
+        ) : (
+          <div
+            className="flex justify-center pt-2.5 pb-2 cursor-grab shrink-0"
+            style={{ touchAction: "none" }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="h-1 w-10 rounded-full bg-sanddark" />
           </div>
         )}
 
