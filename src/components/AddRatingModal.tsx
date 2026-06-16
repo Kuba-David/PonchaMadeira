@@ -288,7 +288,7 @@ export function RatingSheet({
         onClick={(e) => e.stopPropagation()}
       >
         {topImage ? (
-          <div className="relative w-full shrink-0 overflow-hidden" style={{ height: 240 }}>
+          <div className="relative w-full shrink-0 overflow-hidden" style={{ height: 260 }}>
             <img
               src={topImage}
               alt=""
