@@ -68,16 +68,16 @@ export function RatingCard({ rating, onDelete, onEdit, onClick }: Props) {
             <button
               onClick={handleEdit}
               aria-label="Edit"
-              className="text-sanddark hover:text-brand transition"
+              className="text-inksoft/60 hover:text-brand transition"
             >
-              <SquarePen size={15} />
+              <SquarePen size={18} />
             </button>
             <button
               onClick={handleDelete}
               aria-label="Delete"
-              className="text-sanddark hover:text-pinred transition"
+              className="text-inksoft/60 hover:text-pinred transition"
             >
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </button>
           </div>
         </div>

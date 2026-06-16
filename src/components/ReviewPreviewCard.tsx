@@ -1,5 +1,6 @@
 "use client";
-import { CameraOff, MapPin, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { CameraOff, MapPin } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
 
@@ -9,9 +10,70 @@ type Props = {
   onDetail: () => void;
 };
 
+const SWIPE_THRESHOLD = 80;
+
 export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+  const draggedRef = useRef(false);
+
+  function handlePointerDown(e: React.PointerEvent) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    startRef.current = { x: e.clientX, y: e.clientY };
+    draggedRef.current = false;
+    setDragging(true);
+  }
+
+  function handlePointerMove(e: React.PointerEvent) {
+    if (!startRef.current) return;
+    const dx = e.clientX - startRef.current.x;
+    const dy = e.clientY - startRef.current.y;
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      draggedRef.current = true;
+      setDragX(dx);
+    }
+  }
+
+  function handlePointerUp() {
+    if (!startRef.current) return;
+    startRef.current = null;
+    setDragging(false);
+    if (Math.abs(dragX) > SWIPE_THRESHOLD) {
+      setClosing(true);
+      setDragX(dragX > 0 ? window.innerWidth : -window.innerWidth);
+      setTimeout(onClose, 220);
+    } else {
+      setDragX(0);
+    }
+  }
+
+  // Tah stranou = swipe-to-dismiss; potlačí klik na kartu, pokud se právě táhlo.
+  function handleClickCapture(e: React.MouseEvent) {
+    if (draggedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  const opacity = closing ? 0 : Math.max(1 - Math.abs(dragX) / 250, 0.15);
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-4 flex gap-3 items-start">
+    <div
+      className="bg-white rounded-2xl shadow-xl p-4 flex gap-3 items-start"
+      style={{
+        transform: `translateX(${dragX}px)`,
+        opacity,
+        transition: dragging ? "none" : "transform 0.22s cubic-bezier(0.32,0.72,0,1), opacity 0.22s ease",
+        touchAction: "pan-y",
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onClickCapture={handleClickCapture}
+    >
       <button
         onClick={onDetail}
         className="size-14 rounded-xl overflow-hidden bg-cream shrink-0 flex items-center justify-center text-inksoft hover:opacity-90 transition"
@@ -45,16 +107,6 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
           </p>
         )}
       </button>
-
-      <div className="shrink-0">
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="text-sanddark hover:text-inksoft transition"
-        >
-          <X size={18} />
-        </button>
-      </div>
     </div>
   );
 }
