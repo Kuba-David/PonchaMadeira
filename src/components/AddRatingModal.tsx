@@ -237,12 +237,6 @@ export function RatingSheet({
   const [dragging, setDragging] = useState(false);
   const [closing, setClosing] = useState(false);
 
-  useEffect(() => {
-    const prev = document.body.style.overscrollBehavior;
-    document.body.style.overscrollBehavior = "none";
-    return () => { document.body.style.overscrollBehavior = prev; };
-  }, []);
-
   function handleTouchStart(e: React.TouchEvent) {
     startYRef.current = e.touches[0].clientY;
     setDragging(true);
