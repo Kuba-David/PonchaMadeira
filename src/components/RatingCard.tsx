@@ -1,21 +1,17 @@
 "use client";
-import { useState } from "react";
 import { CameraOff, MapPin, Trash2, SquarePen } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
 import { deleteRating } from "@/lib/ratings";
-import { EditRatingModal } from "./EditRatingModal";
 
 type Props = {
   rating: PonchaRating;
   onDelete: (id: string) => void;
-  onUpdate: (r: PonchaRating) => void;
+  onEdit: (r: PonchaRating) => void;
   onClick?: () => void;
 };
 
-export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
-  const [editing, setEditing] = useState(false);
-
+export function RatingCard({ rating, onDelete, onEdit, onClick }: Props) {
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
     if (!confirm(`Delete rating for "${rating.place_name}"?`)) return;
@@ -25,12 +21,11 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
 
   function handleEdit(e: React.MouseEvent) {
     e.stopPropagation();
-    setEditing(true);
+    onEdit(rating);
   }
 
   return (
-    <>
-      <div
+    <div
         onClick={onClick}
         className="bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start cursor-pointer hover:shadow-md transition"
       >
@@ -87,17 +82,5 @@ export function RatingCard({ rating, onDelete, onUpdate, onClick }: Props) {
           </div>
         </div>
       </div>
-
-      {editing && (
-        <EditRatingModal
-          rating={rating}
-          onClose={() => setEditing(false)}
-          onSaved={(r) => {
-            onUpdate(r);
-            setEditing(false);
-          }}
-        />
-      )}
-    </>
   );
 }

@@ -190,7 +190,7 @@ export default function Home() {
                   key={r.id}
                   rating={r}
                   onDelete={handleDelete}
-                  onUpdate={handleUpdate}
+                  onEdit={setEditing}
                   onClick={() => handleCardClick(r)}
                 />
               ))}
