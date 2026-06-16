@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { CameraOff, MapPin } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
+import { cityFromAddress } from "@/lib/geocode";
 
 type Props = {
   rating: PonchaRating;
@@ -97,7 +98,7 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
         {rating.address && (
           <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
             <MapPin size={12} className="shrink-0 text-brand" />
-            <span className="truncate">{rating.address}</span>
+            <span className="truncate">{cityFromAddress(rating.address)}</span>
           </p>
         )}
 

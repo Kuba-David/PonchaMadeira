@@ -88,6 +88,12 @@ async function fetchAddress(lat: number, lng: number): Promise<string> {
   }
 }
 
+// Vrátí jen město/obec z uložené adresy (poslední segment za čárkou).
+export function cityFromAddress(address: string): string {
+  const parts = address.split(",").map((s) => s.trim()).filter(Boolean);
+  return parts[parts.length - 1] ?? address;
+}
+
 export async function reverseGeocode(
   lat: number,
   lng: number
