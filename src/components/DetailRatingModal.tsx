@@ -30,7 +30,7 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
           aria-label="Edit"
           className="text-inksoft/60 hover:text-brand transition"
         >
-          <SquarePen size={20} />
+          <SquarePen size={18} />
         </button>
       }
     >
