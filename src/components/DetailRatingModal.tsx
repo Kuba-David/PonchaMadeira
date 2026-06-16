@@ -1,5 +1,5 @@
 "use client";
-import { MapPin, Pencil } from "lucide-react";
+import { MapPin, SquarePen } from "lucide-react";
 import { RatingSheet, Section } from "./AddRatingModal";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
@@ -28,9 +28,9 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
         <button
           onClick={onEdit}
           aria-label="Edit"
-          className="text-sanddark hover:text-brand transition"
+          className="text-inksoft/60 hover:text-brand transition"
         >
-          <Pencil size={20} />
+          <SquarePen size={20} />
         </button>
       }
     >

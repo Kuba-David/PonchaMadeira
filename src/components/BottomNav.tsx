@@ -1,5 +1,5 @@
 "use client";
-import { SlidersHorizontal } from "lucide-react";
+import { Map, List, ListFilter } from "lucide-react";
 
 type View = "map" | "list";
 
@@ -15,18 +15,20 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
     <div className="flex items-center gap-2 w-full max-w-[360px] bg-sand backdrop-blur border border-sanddark rounded-full p-1.5 shadow-lg">
       <button
         onClick={() => onViewChange("map")}
-        className={`flex-1 px-4 py-3 rounded-full text-sm font-semibold transition ${
+        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold transition ${
           view === "map" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
+        <Map size={18} />
         Map
       </button>
       <button
         onClick={() => onViewChange("list")}
-        className={`flex-1 px-4 py-3 rounded-full text-sm font-semibold transition ${
+        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold transition ${
           view === "list" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
+        <List size={18} />
         List
       </button>
       <button
@@ -36,7 +38,7 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
           filterActive ? "text-brand" : "text-inksoft hover:text-brand"
         }`}
       >
-        <SlidersHorizontal size={17} />
+        <ListFilter size={17} />
       </button>
     </div>
   );
