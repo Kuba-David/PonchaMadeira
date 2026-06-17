@@ -1,5 +1,5 @@
 "use client";
-import { Map, List, ListFilter } from "lucide-react";
+import { MapIcon, ListIcon, FilterIcon } from "./icons";
 
 type View = "map" | "list";
 
@@ -19,7 +19,7 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
           view === "map" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
-        <Map size={18} />
+        <MapIcon size={18} />
         Map
       </button>
       <button
@@ -28,7 +28,7 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
           view === "list" ? "bg-white text-brand shadow-sm" : "text-inksoft"
         }`}
       >
-        <List size={18} />
+        <ListIcon size={18} />
         List
       </button>
       <button
@@ -38,7 +38,7 @@ export function BottomNav({ view, onViewChange, onFilter, filterActive }: Props)
           filterActive ? "text-brand" : "text-inksoft hover:text-brand"
         }`}
       >
-        <ListFilter size={17} />
+        <FilterIcon size={18} />
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
-import { Camera, ImageIcon, ImagePlus, Scaling, Trash2 } from "lucide-react";
+import { Camera, ImageIcon } from "lucide-react";
+import { AddImageIcon, PositionIcon, RemoveIcon } from "./icons";
 
 type Props = {
   displayUrl: string | null;
@@ -38,7 +39,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
             style={{ objectPosition: objectPosition ?? "50% 50%" }}
           />
         ) : (
-          <ImagePlus size={24} className="text-inksoft/50" />
+          <AddImageIcon size={24} className="text-inksoft/50" />
         )}
       </button>
 
@@ -52,7 +53,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
             hasPhoto ? "hover:bg-cream" : "opacity-50 cursor-default"
           }`}
         >
-          <Scaling size={18} /> Position
+          <PositionIcon size={18} /> Position
         </button>
         <button
           type="button"
@@ -62,7 +63,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
             hasPhoto ? "hover:text-pinred" : "opacity-50 cursor-default"
           }`}
         >
-          <Trash2 size={18} /> Remove
+          <RemoveIcon size={18} /> Remove
         </button>
       </div>
 

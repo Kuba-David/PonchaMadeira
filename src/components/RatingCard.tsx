@@ -1,6 +1,6 @@
 "use client";
-import { CameraOff, MapPin, Trash2, SquarePen } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
+import { NoImageIcon, PinIcon, RemoveIcon, EditIcon } from "./icons";
 import type { PonchaRating } from "@/lib/supabase";
 import { deleteRating } from "@/lib/ratings";
 import { cityFromAddress } from "@/lib/geocode";
@@ -34,7 +34,7 @@ export function RatingCard({ rating, onDelete, onEdit, onClick }: Props) {
           {rating.photo_url ? (
             <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <CameraOff size={20} />
+            <NoImageIcon size={20} />
           )}
         </div>
 
@@ -48,7 +48,7 @@ export function RatingCard({ rating, onDelete, onEdit, onClick }: Props) {
 
           {rating.address && (
             <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
-              <MapPin size={12} className="shrink-0 text-brand" />
+              <PinIcon size={12} className="shrink-0 text-brand" />
               <span className="truncate">{cityFromAddress(rating.address)}</span>
             </p>
           )}
@@ -71,14 +71,14 @@ export function RatingCard({ rating, onDelete, onEdit, onClick }: Props) {
               aria-label="Edit"
               className="text-inksoft/60 hover:text-brand transition"
             >
-              <SquarePen size={18} />
+              <EditIcon size={18} />
             </button>
             <button
               onClick={handleDelete}
               aria-label="Delete"
               className="text-inksoft/60 hover:text-pinred transition"
             >
-              <Trash2 size={18} />
+              <RemoveIcon size={18} />
             </button>
           </div>
         </div>

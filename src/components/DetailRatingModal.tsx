@@ -1,5 +1,5 @@
 "use client";
-import { MapPin, SquarePen } from "lucide-react";
+import { PinIcon, EditIcon } from "./icons";
 import { RatingSheet, Section } from "./AddRatingModal";
 import { RatingBadge } from "./RatingBadge";
 import type { PonchaRating } from "@/lib/supabase";
@@ -30,14 +30,14 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
           aria-label="Edit"
           className="text-inksoft/60 hover:text-brand transition"
         >
-          <SquarePen size={18} />
+          <EditIcon size={18} />
         </button>
       }
     >
       <div className="flex flex-col gap-6">
         {rating.address && (
           <p className="flex items-center gap-1.5 text-[14px] text-inksoft -mt-4">
-            <MapPin size={13} className="shrink-0 text-brand" />
+            <PinIcon size={13} className="shrink-0 text-brand" />
             {rating.address}
           </p>
         )}
