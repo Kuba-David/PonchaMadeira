@@ -1,7 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { Camera, ImageIcon } from "lucide-react";
-import { AddImageIcon, PositionIcon, RemoveIcon } from "./icons";
+import { AddImageIcon, PositionIcon, RemoveIcon, CameraIcon, GalleryIcon } from "./icons";
 
 type Props = {
   displayUrl: string | null;
@@ -77,7 +76,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
               className="w-full flex items-center gap-3 px-4 py-3.5 text-[15px] text-ink font-medium hover:bg-cream transition text-left"
               onClick={() => { setShowOptions(false); cameraRef.current?.click(); }}
             >
-              <Camera size={18} className="text-inksoft shrink-0" />
+              <CameraIcon size={18} className="text-inksoft shrink-0" />
               Camera
             </button>
             <div className="h-px bg-sanddark" />
@@ -86,7 +85,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
               className="w-full flex items-center gap-3 px-4 py-3.5 text-[15px] text-ink font-medium hover:bg-cream transition text-left"
               onClick={() => { setShowOptions(false); galleryRef.current?.click(); }}
             >
-              <ImageIcon size={18} className="text-inksoft shrink-0" />
+              <GalleryIcon size={18} className="text-inksoft shrink-0" />
               Gallery
             </button>
           </div>
