@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { AddressLoaderIcon } from "./icons";
 import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
 import { PhotoPicker } from "./PhotoPicker";
@@ -382,7 +382,7 @@ export function PlaceFields({
       />
       {geoLoading && (
         <div className="flex items-center gap-1.5 text-xs text-brand">
-          <Loader2 size={12} className="animate-spin" />
+          <AddressLoaderIcon size={12} className="animate-spin" />
           Loading place from map…
         </div>
       )}

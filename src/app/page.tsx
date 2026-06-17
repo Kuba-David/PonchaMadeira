@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { WineOff, Search, X } from "lucide-react";
+import { EmptyListIcon, SearchIcon, CloseIcon } from "@/components/icons";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNav } from "@/components/BottomNav";
 import { AddRatingModal } from "@/components/AddRatingModal";
@@ -140,7 +140,7 @@ export default function Home() {
           <div className="absolute inset-0 z-10 bg-sand overflow-y-auto px-4 pt-20 pb-28">
             {/* Vyhledávací pole */}
             <div className="flex items-center gap-3 bg-white border border-sanddark rounded-xl h-12 px-4 mb-5">
-              <Search size={18} className="text-inksoft shrink-0" />
+              <SearchIcon size={18} className="text-inksoft shrink-0" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -153,7 +153,7 @@ export default function Home() {
                   aria-label="Clear"
                   className="text-inksoft hover:text-ink transition"
                 >
-                  <X size={16} />
+                  <CloseIcon size={16} />
                 </button>
               )}
             </div>
@@ -166,7 +166,7 @@ export default function Home() {
             )}
             {!loading && listRatings.length === 0 && (
               <div className="text-center py-16">
-                <WineOff size={40} className="mx-auto text-brand/40 mb-3" />
+                <EmptyListIcon size={40} className="mx-auto text-brand/40 mb-3" />
                 {ratings.length === 0 ? (
                   <>
                     <p className="text-inksoft font-medium">No poncha yet</p>
