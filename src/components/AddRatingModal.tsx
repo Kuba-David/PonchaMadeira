@@ -233,24 +233,37 @@ export function RatingSheet({
   imgPosition?: string;
 }) {
   const startYRef = useRef<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  // null = ještě nerozhodnuto, true = zavírací tah, false = běžné scrollování
+  const dragLockRef = useRef<boolean | null>(null);
   const [dragY, setDragY] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [closing, setClosing] = useState(false);
 
   function handleTouchStart(e: React.TouchEvent) {
     startYRef.current = e.touches[0].clientY;
+    // Tah mimo scrollovací oblast (úchyt / hero foto) zavírá vždy.
+    const inScroll = scrollRef.current?.contains(e.target as Node) ?? false;
+    dragLockRef.current = inScroll ? null : true;
     setDragging(true);
   }
 
   function handleTouchMove(e: React.TouchEvent) {
     if (startYRef.current === null) return;
     const delta = e.touches[0].clientY - startYRef.current;
-    setDragY(Math.max(0, delta));
+    // Uvnitř scrollu zavíráme jen když je obsah nahoře a táhne se dolů.
+    if (dragLockRef.current === null) {
+      const atTop = (scrollRef.current?.scrollTop ?? 0) <= 0;
+      if (delta > 4 && atTop) dragLockRef.current = true;
+      else if (delta < -4 || !atTop) dragLockRef.current = false;
+    }
+    if (dragLockRef.current) setDragY(Math.max(0, delta));
   }
 
   function handleTouchEnd() {
     if (startYRef.current === null) return;
     startYRef.current = null;
+    dragLockRef.current = null;
     setDragging(false);
     if (dragY > 90) {
       setClosing(true);
@@ -280,6 +293,9 @@ export function RatingSheet({
           transition: dragging ? "none" : "transform 0.26s cubic-bezier(0.32,0.72,0,1)",
         }}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {topImage ? (
           <div className="relative w-full shrink-0 overflow-hidden" style={{ height: 260 }}>
@@ -294,29 +310,21 @@ export function RatingSheet({
               }}
             />
             {/* Úchyt pro zavření – přes fotku, zavíráme kartu odshora */}
-            <div
-              className="absolute top-0 left-0 w-full flex justify-center pt-2.5 pb-4 cursor-grab"
-              style={{ touchAction: "none" }}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
+            <div className="absolute top-0 left-0 w-full flex justify-center pt-2.5 pb-4 pointer-events-none">
               <div className="h-1 w-10 rounded-full bg-white/80 shadow-sm" />
             </div>
           </div>
         ) : (
-          <div
-            className="flex justify-center pt-2.5 pb-2 cursor-grab shrink-0"
-            style={{ touchAction: "none" }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
+          <div className="flex justify-center pt-2.5 pb-2 shrink-0">
             <div className="h-1 w-10 rounded-full bg-sanddark" />
           </div>
         )}
 
-        <div className="overflow-y-auto flex-1 px-6 pt-4 pb-10">
+        <div
+          ref={scrollRef}
+          className="overflow-y-auto flex-1 px-6 pt-4 pb-10"
+          style={{ overscrollBehavior: "contain" }}
+        >
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display font-bold text-2xl text-ink">{title}</h2>
             {action}
