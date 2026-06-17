@@ -265,7 +265,7 @@ export function RatingSheet({
     startYRef.current = null;
     dragLockRef.current = null;
     setDragging(false);
-    if (dragY > 90) {
+    if (dragY > 180) {
       setClosing(true);
       setDragY(window.innerHeight);
       setTimeout(onClose, 260);
