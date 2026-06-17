@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
-import { CameraOff, MapPin } from "lucide-react";
 import { RatingBadge } from "./RatingBadge";
+import { NoImageIcon, PinIcon } from "./icons";
 import type { PonchaRating } from "@/lib/supabase";
 import { cityFromAddress } from "@/lib/geocode";
 
@@ -83,7 +83,7 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
         {rating.photo_url ? (
           <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
         ) : (
-          <CameraOff size={20} />
+          <NoImageIcon size={20} />
         )}
       </button>
 
@@ -97,7 +97,7 @@ export function ReviewPreviewCard({ rating, onClose, onDetail }: Props) {
 
         {rating.address && (
           <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
-            <MapPin size={12} className="shrink-0 text-brand" />
+            <PinIcon size={12} className="shrink-0 text-brand" />
             <span className="truncate">{cityFromAddress(rating.address)}</span>
           </p>
         )}
