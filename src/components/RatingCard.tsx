@@ -15,6 +15,23 @@ type Props = {
 const REVEAL = 96; // šířka červeného panelu s košem
 const THRESHOLD = 48; // hranice pro otevření/zavření
 
+// Po otevření roll-upu prohlížeč ještě vyšle „duchový" click na souřadnici
+// dotyku. Ten by propadl do čerstvě vykresleného detailu (a omylem např.
+// spustil přechod na mapu). Jednorázově ho v capture fázi polkneme.
+function swallowNextClick() {
+  const swallow = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    cleanup();
+  };
+  const cleanup = () => {
+    window.removeEventListener("click", swallow, true);
+    clearTimeout(t);
+  };
+  const t = setTimeout(cleanup, 700);
+  window.addEventListener("click", swallow, true);
+}
+
 export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -59,6 +76,7 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
       openRef.current = false;
       setDragX(0);
     } else if (genuineTap) {
+      swallowNextClick();
       onOpen();
     }
   }
@@ -136,8 +154,9 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
             <button
               onClick={handleEdit}
               onPointerDown={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
               aria-label="Edit"
-              className="text-inksoft/60 hover:text-brand transition shrink-0"
+              className="-m-2 p-2 text-inksoft/60 hover:text-brand transition shrink-0"
             >
               <EditIcon size={18} />
             </button>

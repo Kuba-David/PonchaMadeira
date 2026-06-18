@@ -157,9 +157,11 @@ export default function Home() {
         {/* Titulní obrazovka – mizí s fade-out po načtení dat */}
         {splashVisible && <SplashScreen fading={splashFading} />}
 
-        {/* Seznam jako překryv */}
+        {/* Seznam jako překryv – hlavička scrolluje spolu s obsahem */}
         {view === "list" && (
-          <div className="absolute inset-0 z-10 bg-sand overflow-y-auto px-4 pt-20 pb-28">
+          <div className="absolute inset-0 z-10 bg-sand overflow-y-auto pb-28">
+            <AppHeader className="mb-3" />
+            <div className="px-4">
             {/* Vyhledávací pole */}
             <div className="flex items-center gap-3 bg-white border border-sanddark rounded-xl h-12 px-4 mb-5">
               <SearchIcon size={18} className="text-inksoft shrink-0" />
@@ -217,13 +219,16 @@ export default function Home() {
                 />
               ))}
             </div>
+            </div>
           </div>
         )}
 
-        {/* Plovoucí hlavička */}
-        <div className="absolute top-0 inset-x-0 z-20 pointer-events-none">
-          <AppHeader />
-        </div>
+        {/* Plovoucí hlavička – jen nad mapou (v seznamu scrolluje s obsahem) */}
+        {view === "map" && (
+          <div className="absolute top-0 inset-x-0 z-20 pointer-events-none">
+            <AppHeader />
+          </div>
+        )}
 
         {/* Náhledová karta vybraného místa (na mapě) */}
         {view === "map" && selected && (

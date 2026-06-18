@@ -56,7 +56,8 @@ export function RatingSlider({
     axisRef.current = null;
     startRef.current = { x: e.clientX, y: e.clientY };
     e.currentTarget.setPointerCapture(e.pointerId);
-    setFromClientX(e.clientX);
+    // Záměrně neměníme hodnotu na pouhý dotyk – knob se hýbe jen tažením,
+    // aby klepnutí nezpůsobilo skok po škále a neblokovalo svislé gesto karty.
   }
   function onPointerMove(e: React.PointerEvent) {
     if (!draggingRef.current || !startRef.current) return;
@@ -112,7 +113,7 @@ export function RatingSlider({
       onTouchMove={stopTouch}
       onKeyDown={onKeyDown}
       className={`relative h-7 flex items-center select-none outline-none ${
-        readOnly ? "" : "cursor-pointer touch-none"
+        readOnly ? "" : "cursor-pointer touch-pan-y"
       }`}
     >
       {/* track */}
