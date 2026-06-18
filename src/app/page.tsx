@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { EmptyListIcon, SearchIcon, CloseIcon } from "@/components/icons";
 import { AppHeader } from "@/components/AppHeader";
@@ -129,6 +129,39 @@ export default function Home() {
     setDetail(null);
   }
 
+  // Swipe doprava v seznamu = alternativa k tlačítku Mapa ve spodní navigaci.
+  // Karty samy o sobě s tímto gestem nic nedělají (jen svoje vlastní
+  // doleva/doprava k odhalení/zavření koše) – sledujeme dotyk na úrovni
+  // celé obrazovky seznamu, ne na jednotlivých kartách.
+  const listTouchRef = useRef<{ x: number; y: number } | null>(null);
+  const listAxisRef = useRef<"x" | "y" | null>(null);
+  const LIST_SWIPE_THRESHOLD = 110;
+
+  function handleListTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    listTouchRef.current = { x: t.clientX, y: t.clientY };
+    listAxisRef.current = null;
+  }
+
+  function handleListTouchMove(e: React.TouchEvent) {
+    const start = listTouchRef.current;
+    if (!start) return;
+    const t = e.touches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (listAxisRef.current === null && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+      listAxisRef.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    }
+  }
+
+  function handleListTouchEnd(e: React.TouchEvent) {
+    const start = listTouchRef.current;
+    listTouchRef.current = null;
+    if (!start || listAxisRef.current !== "x") return;
+    const t = e.changedTouches[0];
+    if (t.clientX - start.x > LIST_SWIPE_THRESHOLD) setView("map");
+  }
+
   async function handleConfirmDelete() {
     if (!deleteTarget) return;
     const id = deleteTarget.id;
@@ -159,7 +192,12 @@ export default function Home() {
 
         {/* Seznam jako překryv – hlavička scrolluje spolu s obsahem */}
         {view === "list" && (
-          <div className="absolute inset-0 z-10 bg-sand overflow-y-auto pb-28">
+          <div
+            className="absolute inset-0 z-10 bg-sand overflow-y-auto pb-28"
+            onTouchStart={handleListTouchStart}
+            onTouchMove={handleListTouchMove}
+            onTouchEnd={handleListTouchEnd}
+          >
             <AppHeader className="mb-3" />
             <div className="px-4">
             {/* Vyhledávací pole */}
@@ -216,7 +254,6 @@ export default function Home() {
                   onRequestDelete={setDeleteTarget}
                   onEdit={setEditing}
                   onOpen={() => handleCardOpen(r)}
-                  onSwipeToMap={() => handleGoToMap(r)}
                 />
               ))}
             </div>

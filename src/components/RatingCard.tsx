@@ -10,13 +10,10 @@ type Props = {
   onRequestDelete: (r: PonchaRating) => void;
   onEdit: (r: PonchaRating) => void;
   onOpen: () => void;
-  onSwipeToMap?: () => void;
 };
 
 const REVEAL = 96; // šířka červeného panelu s košem
 const THRESHOLD = 48; // hranice pro otevření/zavření
-const SWIPE_TO_MAP = 90; // tah doprava ze zavřené karty → přechod na mapu
-const RIGHT_GIVE = 28; // max. „gumové" vizuální posunutí doprava (jen feedback)
 
 // Po otevření roll-upu prohlížeč ještě vyšle „duchový" click na souřadnici
 // dotyku. Ten by propadl do čerstvě vykresleného detailu (a omylem např.
@@ -35,22 +32,16 @@ function swallowNextClick() {
   window.addEventListener("click", swallow, true);
 }
 
-export function RatingCard({ rating, onRequestDelete, onEdit, onOpen, onSwipeToMap }: Props) {
+export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const openRef = useRef(false);
   const startRef = useRef<{ x: number; y: number } | null>(null);
   const baseRef = useRef(0);
   const draggedRef = useRef(false);
-  // Skutečný (neomezený) posun doprava – dragX je vizuálně přiškrcený, ale
-  // pro rozhodnutí "swipe to map" potřebujeme vědět, jak daleko prst došel.
-  const rawDxRef = useRef(0);
 
   function clamp(x: number) {
-    // Doleva odhaluje koš (až REVEAL). Doprava jen drobné gumové gesto jako
-    // potvrzení, že se táhne – skutečný přechod na mapu řeší rawDxRef.
-    if (x > 0) return Math.min(RIGHT_GIVE, x / 3);
-    return Math.max(-REVEAL, x);
+    return Math.max(-REVEAL, Math.min(0, x));
   }
 
   function onPointerDown(e: React.PointerEvent) {
@@ -58,7 +49,6 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen, onSwipeToM
     startRef.current = { x: e.clientX, y: e.clientY };
     baseRef.current = openRef.current ? -REVEAL : 0;
     draggedRef.current = false;
-    rawDxRef.current = 0;
     setDragging(true);
   }
 
@@ -69,10 +59,7 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen, onSwipeToM
     if (!draggedRef.current && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
       draggedRef.current = true;
     }
-    if (draggedRef.current) {
-      rawDxRef.current = dx;
-      setDragX(clamp(baseRef.current + dx));
-    }
+    if (draggedRef.current) setDragX(clamp(baseRef.current + dx));
   }
 
   // genuineTap: true jen u skutečného pointerup (ne pointercancel). Scroll
@@ -81,14 +68,6 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen, onSwipeToM
     startRef.current = null;
     setDragging(false);
     if (draggedRef.current) {
-      const wasClosed = baseRef.current === 0;
-      // Swipe doprava ze zavřené karty → mapa. Z otevřené karty (koš odhalen)
-      // doprava jen zavírá, ať se obě gesta nepřou.
-      if (wasClosed && rawDxRef.current > SWIPE_TO_MAP && onSwipeToMap) {
-        setDragX(0);
-        onSwipeToMap();
-        return;
-      }
       const open = dragX < -THRESHOLD;
       openRef.current = open;
       setDragX(open ? -REVEAL : 0);
