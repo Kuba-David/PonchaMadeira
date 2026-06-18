@@ -57,16 +57,18 @@ export default function Home() {
     [ratings, filterTypes, filterBalance]
   );
 
-  // seznam: filtr + textové hledání
+  // seznam: filtr + textové hledání, seřazeno od nejlepšího hodnocení
   const listRatings = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return mapRatings.filter((r) => {
-      if (!q) return true;
-      return (
-        r.place_name.toLowerCase().includes(q) ||
-        (r.address?.toLowerCase().includes(q) ?? false)
-      );
-    });
+    return mapRatings
+      .filter((r) => {
+        if (!q) return true;
+        return (
+          r.place_name.toLowerCase().includes(q) ||
+          (r.address?.toLowerCase().includes(q) ?? false)
+        );
+      })
+      .sort((a, b) => b.rating - a.rating);
   }, [mapRatings, searchQuery]);
 
   useEffect(() => {
