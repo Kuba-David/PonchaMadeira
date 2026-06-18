@@ -59,6 +59,11 @@ export function RatingSlider({
   function onPointerUp() {
     draggingRef.current = false;
   }
+  // Tah po slideru nesmí spustit zavírací gesto karty (běží na touch
+  // událostech rodiče). Zastavíme propagaci → prst na slideru kartou nehýbe.
+  function stopTouch(e: React.TouchEvent) {
+    if (!readOnly) e.stopPropagation();
+  }
   function onKeyDown(e: React.KeyboardEvent) {
     if (readOnly || !onChange) return;
     const stepSize = 1 / (steps - 1);
@@ -86,6 +91,8 @@ export function RatingSlider({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onTouchStart={stopTouch}
+      onTouchMove={stopTouch}
       onKeyDown={onKeyDown}
       className={`relative h-7 flex items-center select-none outline-none ${
         readOnly ? "" : "cursor-pointer touch-none"
