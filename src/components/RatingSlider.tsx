@@ -30,6 +30,10 @@ export function RatingSlider({
 }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+  // Osa gesta: null = nerozhodnuto, "x" = horizontální (slider), "y" = svislé
+  // (zavírací tah karty) – rozhoduje se podle prvního výraznějšího pohybu.
+  const axisRef = useRef<"x" | "y" | null>(null);
 
   function snap(raw: number): number {
     const n = steps - 1;
@@ -49,20 +53,33 @@ export function RatingSlider({
   function onPointerDown(e: React.PointerEvent) {
     if (readOnly) return;
     draggingRef.current = true;
+    axisRef.current = null;
+    startRef.current = { x: e.clientX, y: e.clientY };
     e.currentTarget.setPointerCapture(e.pointerId);
     setFromClientX(e.clientX);
   }
   function onPointerMove(e: React.PointerEvent) {
-    if (!draggingRef.current) return;
-    setFromClientX(e.clientX);
+    if (!draggingRef.current || !startRef.current) return;
+    if (axisRef.current === null) {
+      const dx = e.clientX - startRef.current.x;
+      const dy = e.clientY - startRef.current.y;
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+        axisRef.current = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+      }
+    }
+    // Dokud tah není rozpoznán jako svislý (= zavírání karty), slider reaguje.
+    if (axisRef.current !== "y") setFromClientX(e.clientX);
   }
   function onPointerUp() {
     draggingRef.current = false;
+    axisRef.current = null;
+    startRef.current = null;
   }
   // Tah po slideru nesmí spustit zavírací gesto karty (běží na touch
-  // událostech rodiče). Zastavíme propagaci → prst na slideru kartou nehýbe.
+  // událostech rodiče) – ale jen pokud je tah převážně horizontální. Svislý
+  // tah (i přes slider) propustíme dál, ať lze kartu zavřít odkudkoli.
   function stopTouch(e: React.TouchEvent) {
-    if (!readOnly) e.stopPropagation();
+    if (!readOnly && axisRef.current === "x") e.stopPropagation();
   }
   function onKeyDown(e: React.KeyboardEvent) {
     if (readOnly || !onChange) return;

@@ -12,8 +12,8 @@ type Props = {
   onOpen: () => void;
 };
 
-const REVEAL = 88; // šířka červeného panelu s košem
-const THRESHOLD = 44; // hranice pro otevření/zavření
+const REVEAL = 96; // šířka červeného panelu s košem
+const THRESHOLD = 48; // hranice pro otevření/zavření
 
 export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
   const [dragX, setDragX] = useState(0);
@@ -45,7 +45,9 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
     if (draggedRef.current) setDragX(clamp(baseRef.current + dx));
   }
 
-  function onPointerUp() {
+  // genuineTap: true jen u skutečného pointerup (ne pointercancel). Scroll
+  // seznamem totiž často zruší dotyk jako "cancel" – to nesmí otevřít detail.
+  function finishGesture(genuineTap: boolean) {
     startRef.current = null;
     setDragging(false);
     if (draggedRef.current) {
@@ -56,9 +58,15 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
       // klepnutí na otevřenou kartu → zavřít
       openRef.current = false;
       setDragX(0);
-    } else {
+    } else if (genuineTap) {
       onOpen();
     }
+  }
+  function onPointerUp() {
+    finishGesture(true);
+  }
+  function onPointerCancel() {
+    finishGesture(false);
   }
 
   function handleEdit(e: React.MouseEvent) {
@@ -91,15 +99,18 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
         className="relative bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start cursor-pointer"
         style={{
           transform: `translateX(${dragX}px)`,
-          transition: dragging
-            ? "none"
-            : "transform 0.24s cubic-bezier(0.32,0.72,0,1)",
+          // Zavírání (→0) se animuje pro hezký efekt; otevření je okamžité,
+          // aby rychlé "swipe + tap na koš" netrefilo ještě animující kartu.
+          transition:
+            dragging || dragX !== 0
+              ? "none"
+              : "transform 0.24s cubic-bezier(0.32,0.72,0,1)",
           touchAction: "pan-y",
         }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerCancel={onPointerCancel}
       >
         <div
           className={`flex items-center justify-center size-[52px] rounded-2xl text-white font-extrabold text-2xl shrink-0 ${ratingColorClass(

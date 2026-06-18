@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
-import { AddImageIcon, PositionIcon, RemoveIcon, CameraIcon, GalleryIcon } from "./icons";
+import { AddImageIcon, PositionIcon, RemoveIcon } from "./icons";
+import { PhotoSourceModal } from "./PhotoSourceModal";
 
 type Props = {
   displayUrl: string | null;
@@ -68,28 +69,11 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
 
       {/* Volba zdroje fotky */}
       {showOptions && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setShowOptions(false)} />
-          <div className="absolute left-0 top-[calc(100%+8px)] z-20 w-48 bg-white border border-sanddark rounded-2xl shadow-lg overflow-hidden">
-            <button
-              type="button"
-              className="w-full flex items-center gap-3 px-4 py-3.5 text-[15px] text-ink font-medium hover:bg-cream transition text-left"
-              onClick={() => { setShowOptions(false); cameraRef.current?.click(); }}
-            >
-              <CameraIcon size={18} className="text-inksoft shrink-0" />
-              Camera
-            </button>
-            <div className="h-px bg-sanddark" />
-            <button
-              type="button"
-              className="w-full flex items-center gap-3 px-4 py-3.5 text-[15px] text-ink font-medium hover:bg-cream transition text-left"
-              onClick={() => { setShowOptions(false); galleryRef.current?.click(); }}
-            >
-              <GalleryIcon size={18} className="text-inksoft shrink-0" />
-              Gallery
-            </button>
-          </div>
-        </>
+        <PhotoSourceModal
+          onCamera={() => { setShowOptions(false); cameraRef.current?.click(); }}
+          onGallery={() => { setShowOptions(false); galleryRef.current?.click(); }}
+          onClose={() => setShowOptions(false)}
+        />
       )}
 
       <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
