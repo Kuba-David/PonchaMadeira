@@ -101,7 +101,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
 
   return (
     <>
-    <RatingSheet title="Edit rating" onClose={onClose}>
+    <RatingSheet title="Edit rating" onClose={onClose} editable>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <PlaceFields
           placeName={placeName}

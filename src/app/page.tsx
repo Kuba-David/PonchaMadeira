@@ -216,6 +216,7 @@ export default function Home() {
                   onRequestDelete={setDeleteTarget}
                   onEdit={setEditing}
                   onOpen={() => handleCardOpen(r)}
+                  onSwipeToMap={() => handleGoToMap(r)}
                 />
               ))}
             </div>

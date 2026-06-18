@@ -109,7 +109,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
 
   return (
     <>
-    <RatingSheet title="Rate poncha" onClose={onClose}>
+    <RatingSheet title="Rate poncha" onClose={onClose} editable>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <PlaceFields
           placeName={placeName}
@@ -207,6 +207,7 @@ export function RatingSheet({
   children,
   topImage,
   imgPosition,
+  editable = false,
 }: {
   title: string;
   onClose: () => void;
@@ -215,6 +216,9 @@ export function RatingSheet({
   children: React.ReactNode;
   topImage?: string;
   imgPosition?: string;
+  // Odlišuje editovatelnou kartu (Add/Edit) od náhledové (Detail) – ať je na
+  // první pohled jasné, kterou z nich má uživatel otevřenou.
+  editable?: boolean;
 }) {
   const startYRef = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -271,7 +275,7 @@ export function RatingSheet({
       onClick={onClose}
     >
       <div
-        className="bg-cream w-full max-w-md rounded-t-3xl max-h-[92dvh] flex flex-col overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.2)]"
+        className={`${editable ? "bg-sand" : "bg-cream"} w-full max-w-md rounded-t-3xl max-h-[92dvh] flex flex-col overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.2)]`}
         style={{
           transform: `translateY(${dragY}px)`,
           transition: dragging ? "none" : "transform 0.26s cubic-bezier(0.32,0.72,0,1)",
