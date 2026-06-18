@@ -13,6 +13,10 @@ export type PonchaRating = {
   rating: number;
   poncha_type: string | null;
   balance: string | null;
+  sourness: number | null;
+  sweetness: number | null;
+  booziness: number | null;
+  freshness: number | null;
   notes: string | null;
   latitude: number;
   longitude: number;
