@@ -1,14 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { AddressLoaderIcon } from "./icons";
-import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
 import { PhotoPicker } from "./PhotoPicker";
 import { PhotoPositionModal } from "./PhotoPositionModal";
+import { SliderRatingFields } from "./SliderRatingFields";
 import { addRating } from "@/lib/ratings";
 import { uploadPhoto, parsePhotoX, parsePhotoY, parsePhotoZoom } from "@/lib/photos";
 import { reverseGeocode } from "@/lib/geocode";
-import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
+import { PONCHA_TYPES } from "@/lib/options";
+import { DEFAULT_SLIDERS, computeRating, type Sliders } from "@/lib/scoring";
 import type { PonchaRating } from "@/lib/supabase";
 
 type Props = {
@@ -21,9 +22,8 @@ type Props = {
 export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
   const [placeName, setPlaceName] = useState("");
   const [address, setAddress] = useState("");
-  const [rating, setRating] = useState(8);
   const [ponchaTypes, setPonchaTypes] = useState<string[]>([]);
-  const [taste, setTaste] = useState<string[]>([]);
+  const [sliders, setSliders] = useState<Sliders>(DEFAULT_SLIDERS);
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -72,12 +72,6 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
     );
   }
 
-  function toggleTaste(t: string) {
-    setTaste((prev) =>
-      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
-    );
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!placeName.trim()) {
@@ -92,9 +86,13 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
       const saved = await addRating({
         place_name: placeName.trim(),
         address: address.trim() || null,
-        rating,
+        rating: computeRating(sliders),
         poncha_type: ponchaTypes.join(", ") || null,
-        balance: taste.join(", ") || null,
+        balance: null,
+        sourness: sliders.sourness,
+        sweetness: sliders.sweetness,
+        booziness: sliders.booziness,
+        freshness: sliders.freshness,
         notes: notes.trim() || null,
         latitude: lat,
         longitude: lng,
@@ -121,10 +119,6 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           onAddress={setAddress}
         />
 
-        <Section label="Rating">
-          <RatingPills value={rating} onChange={setRating} />
-        </Section>
-
         <Section label="Poncha type">
           <div className="flex flex-wrap gap-2">
             {PONCHA_TYPES.map((t) => (
@@ -138,19 +132,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Taste">
-          <div className="flex flex-wrap gap-2">
-            {BALANCE_OPTIONS.map((b) => (
-              <Chip
-                key={b}
-                label={b}
-                color="green"
-                active={taste.includes(b)}
-                onClick={() => toggleTaste(b)}
-              />
-            ))}
-          </div>
-        </Section>
+        <SliderRatingFields value={sliders} onChange={setSliders} />
 
         <Section label="Photos">
           <PhotoPicker

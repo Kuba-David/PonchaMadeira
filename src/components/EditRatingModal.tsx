@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import { RatingPills } from "./RatingPills";
 import { Chip } from "./Chip";
 import { PhotoPicker } from "./PhotoPicker";
 import { PhotoPositionModal } from "./PhotoPositionModal";
 import { RatingSheet, Section, PlaceFields } from "./AddRatingModal";
+import { SliderRatingFields } from "./SliderRatingFields";
 import { updateRating } from "@/lib/ratings";
 import { uploadPhoto, parsePhotoX, parsePhotoY, parsePhotoZoom } from "@/lib/photos";
-import { PONCHA_TYPES, BALANCE_OPTIONS } from "@/lib/options";
+import { PONCHA_TYPES } from "@/lib/options";
+import { computeRating, slidersFrom, type Sliders } from "@/lib/scoring";
 import type { PonchaRating } from "@/lib/supabase";
 
 type Props = {
@@ -19,13 +20,10 @@ type Props = {
 export function EditRatingModal({ rating, onClose, onSaved }: Props) {
   const [placeName, setPlaceName] = useState(rating.place_name);
   const [address, setAddress] = useState(rating.address ?? "");
-  const [score, setScore] = useState(rating.rating);
   const [ponchaTypes, setPonchaTypes] = useState<string[]>(
     rating.poncha_type ? rating.poncha_type.split(", ").filter(Boolean) : []
   );
-  const [taste, setTaste] = useState<string[]>(
-    rating.balance ? rating.balance.split(", ").filter(Boolean) : []
-  );
+  const [sliders, setSliders] = useState<Sliders>(slidersFrom(rating));
   const [notes, setNotes] = useState(rating.notes ?? "");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -62,12 +60,6 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
     );
   }
 
-  function toggleTaste(t: string) {
-    setTaste((prev) =>
-      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
-    );
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!placeName.trim()) {
@@ -88,9 +80,13 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
       const saved = await updateRating(rating.id, {
         place_name: placeName.trim(),
         address: address.trim() || null,
-        rating: score,
+        rating: computeRating(sliders),
         poncha_type: ponchaTypes.join(", ") || null,
-        balance: taste.join(", ") || null,
+        balance: null,
+        sourness: sliders.sourness,
+        sweetness: sliders.sweetness,
+        booziness: sliders.booziness,
+        freshness: sliders.freshness,
         notes: notes.trim() || null,
         ...(photo_url !== undefined ? { photo_url } : {}),
         ...(photo_position !== undefined ? { photo_position } : {}),
@@ -115,10 +111,6 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           onAddress={setAddress}
         />
 
-        <Section label="Rating">
-          <RatingPills value={score} onChange={setScore} />
-        </Section>
-
         <Section label="Poncha type">
           <div className="flex flex-wrap gap-2">
             {PONCHA_TYPES.map((t) => (
@@ -132,19 +124,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
           </div>
         </Section>
 
-        <Section label="Taste">
-          <div className="flex flex-wrap gap-2">
-            {BALANCE_OPTIONS.map((b) => (
-              <Chip
-                key={b}
-                label={b}
-                color="green"
-                active={taste.includes(b)}
-                onClick={() => toggleTaste(b)}
-              />
-            ))}
-          </div>
-        </Section>
+        <SliderRatingFields value={sliders} onChange={setSliders} />
 
         <Section label="Photos">
           <PhotoPicker
