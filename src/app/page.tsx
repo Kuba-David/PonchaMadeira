@@ -8,10 +8,11 @@ import { AddRatingModal } from "@/components/AddRatingModal";
 import { EditRatingModal } from "@/components/EditRatingModal";
 import { DetailRatingModal } from "@/components/DetailRatingModal";
 import { FilterSheet } from "@/components/FilterSheet";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { RatingCard } from "@/components/RatingCard";
 import { ReviewPreviewCard } from "@/components/ReviewPreviewCard";
 import { SplashScreen } from "@/components/SplashScreen";
-import { getRatings } from "@/lib/ratings";
+import { getRatings, deleteRating } from "@/lib/ratings";
 import type { PonchaRating } from "@/lib/supabase";
 
 const PonchaMap = dynamic(
@@ -44,6 +45,7 @@ export default function Home() {
   const [selected, setSelected] = useState<PonchaRating | null>(null);
   const [detail, setDetail] = useState<PonchaRating | null>(null);
   const [editing, setEditing] = useState<PonchaRating | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PonchaRating | null>(null);
 
   // filtr (mapa + seznam) a hledání (jen seznam)
   const [showFilter, setShowFilter] = useState(false);
@@ -111,10 +113,28 @@ export default function Home() {
     setDetail((prev) => (prev?.id === id ? null : prev));
   }
 
-  function handleCardClick(r: PonchaRating) {
+  // Klik na seznamovou kartu: otevře detail (roll-up) a tiše vycentruje mapu
+  // na pozadí, takže po přechodu na mapu už je místo zaměřené.
+  function handleCardOpen(r: PonchaRating) {
+    setDetail(r);
+    setSelected(r);
+    setFocus((prev) => ({ id: r.id, nonce: (prev?.nonce ?? 0) + 1 }));
+  }
+
+  // Přechod z detailu na mapu (klik na název/adresu).
+  function handleGoToMap(r: PonchaRating) {
     setFocus((prev) => ({ id: r.id, nonce: (prev?.nonce ?? 0) + 1 }));
     setSelected(r);
     setView("map");
+    setDetail(null);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteTarget(null);
+    await deleteRating(id);
+    handleDelete(id);
   }
 
   const filterActive = filterTypes.length > 0 || filterBalance.length > 0;
@@ -191,9 +211,9 @@ export default function Home() {
                 <RatingCard
                   key={r.id}
                   rating={r}
-                  onDelete={handleDelete}
+                  onRequestDelete={setDeleteTarget}
                   onEdit={setEditing}
-                  onClick={() => handleCardClick(r)}
+                  onOpen={() => handleCardOpen(r)}
                 />
               ))}
             </div>
@@ -246,6 +266,15 @@ export default function Home() {
             setEditing(detail);
             setDetail(null);
           }}
+          onGoToMap={() => handleGoToMap(detail)}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this rating?"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
 

@@ -1,23 +1,64 @@
 "use client";
-import { RatingBadge } from "./RatingBadge";
-import { NoImageIcon, PinIcon, RemoveIcon, EditIcon } from "./icons";
+import { useRef, useState } from "react";
+import { ratingColorClass } from "./RatingBadge";
+import { PinIcon, RemoveIcon, EditIcon } from "./icons";
 import type { PonchaRating } from "@/lib/supabase";
-import { deleteRating } from "@/lib/ratings";
 import { cityFromAddress } from "@/lib/geocode";
 
 type Props = {
   rating: PonchaRating;
-  onDelete: (id: string) => void;
+  onRequestDelete: (r: PonchaRating) => void;
   onEdit: (r: PonchaRating) => void;
-  onClick?: () => void;
+  onOpen: () => void;
 };
 
-export function RatingCard({ rating, onDelete, onEdit, onClick }: Props) {
-  async function handleDelete(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!confirm(`Delete rating for "${rating.place_name}"?`)) return;
-    await deleteRating(rating.id);
-    onDelete(rating.id);
+const REVEAL = 88; // šířka červeného panelu s košem
+const THRESHOLD = 44; // hranice pro otevření/zavření
+
+export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const openRef = useRef(false);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+  const baseRef = useRef(0);
+  const draggedRef = useRef(false);
+
+  function clamp(x: number) {
+    return Math.max(-REVEAL, Math.min(0, x));
+  }
+
+  function onPointerDown(e: React.PointerEvent) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    startRef.current = { x: e.clientX, y: e.clientY };
+    baseRef.current = openRef.current ? -REVEAL : 0;
+    draggedRef.current = false;
+    setDragging(true);
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (!startRef.current) return;
+    const dx = e.clientX - startRef.current.x;
+    const dy = e.clientY - startRef.current.y;
+    if (!draggedRef.current && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      draggedRef.current = true;
+    }
+    if (draggedRef.current) setDragX(clamp(baseRef.current + dx));
+  }
+
+  function onPointerUp() {
+    startRef.current = null;
+    setDragging(false);
+    if (draggedRef.current) {
+      const open = dragX < -THRESHOLD;
+      openRef.current = open;
+      setDragX(open ? -REVEAL : 0);
+    } else if (openRef.current) {
+      // klepnutí na otevřenou kartu → zavřít
+      openRef.current = false;
+      setDragX(0);
+    } else {
+      onOpen();
+    }
   }
 
   function handleEdit(e: React.MouseEvent) {
@@ -25,63 +66,79 @@ export function RatingCard({ rating, onDelete, onEdit, onClick }: Props) {
     onEdit(rating);
   }
 
+  function handleTrash() {
+    openRef.current = false;
+    setDragX(0);
+    onRequestDelete(rating);
+  }
+
   return (
-    <div
-        onClick={onClick}
-        className="bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start cursor-pointer hover:shadow-md transition"
+    <div className="relative">
+      {/* červený panel s košem pod kartou */}
+      <div className="absolute inset-0 rounded-2xl bg-pinred flex justify-end overflow-hidden">
+        <button
+          onClick={handleTrash}
+          aria-label="Delete"
+          className="flex items-center justify-center text-white active:bg-black/10 transition"
+          style={{ width: REVEAL }}
+        >
+          <RemoveIcon size={22} />
+        </button>
+      </div>
+
+      {/* posuvná karta */}
+      <div
+        className="relative bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start cursor-pointer"
+        style={{
+          transform: `translateX(${dragX}px)`,
+          transition: dragging
+            ? "none"
+            : "transform 0.24s cubic-bezier(0.32,0.72,0,1)",
+          touchAction: "pan-y",
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
-        <div className="size-14 rounded-xl overflow-hidden bg-cream flex items-center justify-center text-inksoft shrink-0">
-          {rating.photo_url ? (
-            <img src={rating.photo_url} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <NoImageIcon size={20} />
-          )}
+        <div
+          className={`flex items-center justify-center size-[52px] rounded-2xl text-white font-extrabold text-2xl shrink-0 ${ratingColorClass(
+            rating.rating
+          )}`}
+        >
+          {rating.rating}
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-display font-bold text-[17px] text-ink truncate">
-              {rating.place_name}
-            </h3>
-            <RatingBadge value={rating.rating} />
-          </div>
-
-          {rating.address && (
-            <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
-              <PinIcon size={12} className="shrink-0 text-brand" />
-              <span className="truncate">{cityFromAddress(rating.address)}</span>
-            </p>
-          )}
-
-          {rating.poncha_type && (
-            <p className="text-xs text-brand font-medium mt-1">
-              {rating.poncha_type}
-            </p>
-          )}
-
-          {rating.notes && (
-            <p className="text-[13px] text-inksoft italic mt-1 line-clamp-2">
-              “{rating.notes}”
-            </p>
-          )}
-
-          <div className="flex justify-end gap-3 mt-2">
+            <div className="min-w-0">
+              <h3 className="font-display font-bold text-[17px] text-ink truncate">
+                {rating.place_name}
+              </h3>
+              {rating.address && (
+                <p className="flex items-center gap-1 text-[13px] text-inksoft mt-0.5 truncate">
+                  <PinIcon size={12} className="shrink-0 text-brand" />
+                  <span className="truncate">{cityFromAddress(rating.address)}</span>
+                </p>
+              )}
+            </div>
             <button
               onClick={handleEdit}
+              onPointerDown={(e) => e.stopPropagation()}
               aria-label="Edit"
-              className="text-inksoft/60 hover:text-brand transition"
+              className="text-inksoft/60 hover:text-brand transition shrink-0"
             >
               <EditIcon size={18} />
             </button>
-            <button
-              onClick={handleDelete}
-              aria-label="Delete"
-              className="text-inksoft/60 hover:text-pinred transition"
-            >
-              <RemoveIcon size={18} />
-            </button>
           </div>
+
+          {rating.notes && (
+            <p className="text-[13px] text-inksoft italic mt-2 line-clamp-2">
+              &ldquo;{rating.notes}&rdquo;
+            </p>
+          )}
         </div>
       </div>
+    </div>
   );
 }

@@ -10,6 +10,7 @@ type Props = {
   rating: PonchaRating;
   onClose: () => void;
   onEdit: () => void;
+  onGoToMap: () => void;
 };
 
 function ReadRow({
@@ -33,7 +34,7 @@ function ReadRow({
   );
 }
 
-export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
+export function DetailRatingModal({ rating, onClose, onEdit, onGoToMap }: Props) {
   const ponchaTypes = rating.poncha_type
     ? rating.poncha_type.split(", ").filter(Boolean)
     : [];
@@ -47,6 +48,7 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
     <RatingSheet
       title={rating.place_name}
       onClose={onClose}
+      onTitleClick={onGoToMap}
       topImage={rating.photo_url ?? undefined}
       imgPosition={rating.photo_position ?? undefined}
       action={
@@ -61,10 +63,13 @@ export function DetailRatingModal({ rating, onClose, onEdit }: Props) {
     >
       <div className="flex flex-col gap-6">
         {rating.address && (
-          <p className="flex items-center gap-1.5 text-[14px] text-inksoft -mt-4">
+          <button
+            onClick={onGoToMap}
+            className="flex items-center gap-1.5 text-[14px] text-inksoft -mt-4 text-left hover:text-brand transition"
+          >
             <PinIcon size={13} className="shrink-0 text-brand" />
             {rating.address}
-          </p>
+          </button>
         )}
 
         {ponchaTypes.length > 0 && (

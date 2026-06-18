@@ -202,6 +202,7 @@ function parseZoomVal(position: string | undefined): number {
 export function RatingSheet({
   title,
   onClose,
+  onTitleClick,
   action,
   children,
   topImage,
@@ -209,6 +210,7 @@ export function RatingSheet({
 }: {
   title: string;
   onClose: () => void;
+  onTitleClick?: () => void;
   action?: React.ReactNode;
   children: React.ReactNode;
   topImage?: string;
@@ -308,7 +310,16 @@ export function RatingSheet({
           style={{ overscrollBehavior: "contain" }}
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display font-bold text-2xl text-ink">{title}</h2>
+            {onTitleClick ? (
+              <button
+                onClick={onTitleClick}
+                className="font-display font-bold text-2xl text-ink text-left hover:text-brand transition"
+              >
+                {title}
+              </button>
+            ) : (
+              <h2 className="font-display font-bold text-2xl text-ink">{title}</h2>
+            )}
             {action}
           </div>
           {children}
