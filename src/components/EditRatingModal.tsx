@@ -141,7 +141,7 @@ export function EditRatingModal({ rating, onClose, onSaved }: Props) {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add a note about the poncha..."
             rows={3}
-            className="w-full bg-cream border border-sanddark rounded-xl p-4 text-[15px] text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight resize-none"
+            className="w-full bg-cream border border-sanddark rounded-xl p-4 text-[15px] text-ink placeholder:text-inktertiary focus:outline-none focus:border-brandlight resize-none"
           />
         </Section>
 

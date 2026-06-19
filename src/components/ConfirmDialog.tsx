@@ -19,8 +19,7 @@ export function ConfirmDialog({
 }: Props) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-8"
-      style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-8 bg-overlay/80"
       onClick={onCancel}
     >
       <div

@@ -207,7 +207,7 @@ export default function Home() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search places..."
-                className="flex-1 text-[15px] text-ink placeholder:text-inksoft/60 bg-transparent focus:outline-none"
+                className="flex-1 text-[15px] text-ink placeholder:text-inktertiary bg-transparent focus:outline-none"
               />
               {searchQuery && (
                 <button
@@ -224,7 +224,7 @@ export default function Home() {
               Rated places
             </h2>
             {loading && (
-              <div className="text-center text-inksoft/60 py-8">Loading...</div>
+              <div className="text-center text-inktertiary py-8">Loading...</div>
             )}
             {!loading && listRatings.length === 0 && (
               <div className="text-center py-16">
@@ -232,14 +232,14 @@ export default function Home() {
                 {ratings.length === 0 ? (
                   <>
                     <p className="text-inksoft font-medium">No poncha yet</p>
-                    <p className="text-inksoft/70 text-sm mt-1">
+                    <p className="text-inktertiary text-sm mt-1">
                       Switch to the map and tap a spot where you had poncha
                     </p>
                   </>
                 ) : (
                   <>
                     <p className="text-inksoft font-medium">No results</p>
-                    <p className="text-inksoft/70 text-sm mt-1">
+                    <p className="text-inktertiary text-sm mt-1">
                       Try adjusting your search or filter
                     </p>
                   </>

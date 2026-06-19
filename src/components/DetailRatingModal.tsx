@@ -55,7 +55,7 @@ export function DetailRatingModal({ rating, onClose, onEdit, onGoToMap }: Props)
         <button
           onClick={onEdit}
           aria-label="Edit"
-          className="text-inksoft/60 hover:text-brand transition"
+          className="text-inktertiary hover:text-brand transition"
         >
           <EditIcon size={18} />
         </button>

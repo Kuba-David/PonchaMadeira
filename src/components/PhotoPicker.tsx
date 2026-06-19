@@ -39,7 +39,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
             style={{ objectPosition: objectPosition ?? "50% 50%" }}
           />
         ) : (
-          <AddImageIcon size={24} className="text-inksoft/50" />
+          <AddImageIcon size={24} className="text-inktertiary" />
         )}
       </button>
 
@@ -49,7 +49,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
           type="button"
           disabled={!hasPhoto}
           onClick={onReposition}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[14px] font-semibold text-inksoft/60 transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[14px] font-semibold text-inktertiary transition ${
             hasPhoto ? "hover:bg-cream" : "opacity-50 cursor-default"
           }`}
         >
@@ -59,7 +59,7 @@ export function PhotoPicker({ displayUrl, onChange, objectPosition, onReposition
           type="button"
           disabled={!hasPhoto}
           onClick={() => onChange(null)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[14px] font-semibold text-inksoft/60 transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[14px] font-semibold text-inktertiary transition ${
             hasPhoto ? "hover:text-pinred" : "opacity-50 cursor-default"
           }`}
         >

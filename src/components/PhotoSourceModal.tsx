@@ -11,8 +11,7 @@ type Props = {
 export function PhotoSourceModal({ onCamera, onGallery, onClose }: Props) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-8"
-      style={{ backgroundColor: "rgba(44,44,44,0.5)" }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-8 bg-overlay/80"
       onClick={onClose}
     >
       <div

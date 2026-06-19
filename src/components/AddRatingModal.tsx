@@ -149,7 +149,7 @@ export function AddRatingModal({ lat, lng, onClose, onSaved }: Props) {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add a note about the poncha..."
             rows={3}
-            className="w-full bg-cream border border-sanddark rounded-xl p-4 text-[15px] text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight resize-none"
+            className="w-full bg-cream border border-sanddark rounded-xl p-4 text-[15px] text-ink placeholder:text-inktertiary focus:outline-none focus:border-brandlight resize-none"
           />
         </Section>
 
@@ -369,13 +369,13 @@ export function PlaceFields({
         value={placeName}
         onChange={(e) => onName(e.target.value)}
         placeholder="Place name *"
-        className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[15px] font-semibold text-ink placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight"
+        className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[15px] font-semibold text-ink placeholder:text-inktertiary focus:outline-none focus:border-brandlight"
       />
       <input
         value={address}
         onChange={(e) => onAddress(e.target.value)}
         placeholder="Address"
-        className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[14px] text-inksoft placeholder:text-inksoft/60 focus:outline-none focus:border-brandlight"
+        className="w-full bg-white border border-sanddark rounded-2xl px-4 py-3 text-[14px] text-inksoft placeholder:text-inktertiary focus:outline-none focus:border-brandlight"
       />
       {geoLoading && (
         <div className="flex items-center gap-1.5 text-xs text-brand">

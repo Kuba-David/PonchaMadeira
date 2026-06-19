@@ -5,11 +5,13 @@
   --font-display: var(--font-outfit);
 
   /* Best Poncha paleta (z Figma proměnných) */
-  --color-cream: #fdfbf7;
-  --color-sand: #f2ede4;
-  --color-sanddark: #ebe6de;
+  --color-cream: #f4f0e9;
+  --color-sand: #e4dbcb;
+  --color-sanddark: #dad3c7;
   --color-ink: #2c2c2c;
   --color-inksoft: #635f58;
+  --color-inktertiary: #b4aa98;
+  --color-overlay: #e5e5e5;
   --color-brand: #d35400;
   --color-brandlight: #e67e22;
   --color-pingreen: #4a7c59;

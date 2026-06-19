@@ -62,7 +62,7 @@ export function FilterSheet({
               onApply([], []);
               onClose();
             }}
-            className="text-sm font-semibold text-inksoft/60 hover:text-inksoft transition"
+            className="text-sm font-semibold text-inktertiary hover:text-inksoft transition"
           >
             Clear all
           </button>

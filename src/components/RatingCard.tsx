@@ -156,7 +156,7 @@ export function RatingCard({ rating, onRequestDelete, onEdit, onOpen }: Props) {
               onPointerDown={(e) => e.stopPropagation()}
               onPointerUp={(e) => e.stopPropagation()}
               aria-label="Edit"
-              className="-m-2 p-2 text-inksoft/60 hover:text-brand transition shrink-0"
+              className="-m-2 p-2 text-inktertiary hover:text-brand transition shrink-0"
             >
               <EditIcon size={18} />
             </button>
