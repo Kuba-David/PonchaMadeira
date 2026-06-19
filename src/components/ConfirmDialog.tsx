@@ -30,7 +30,7 @@ export function ConfirmDialog({
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-14 rounded-full border border-sanddark bg-cream font-bold text-ink transition active:scale-[0.98]"
+            className="flex-1 h-14 rounded-full border border-sanddark font-bold text-ink transition active:scale-[0.98]"
           >
             {cancelLabel}
           </button>

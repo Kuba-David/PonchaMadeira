@@ -21,7 +21,7 @@ export function Chip({ label, active, onClick, color = "brand", disabled }: Prop
       className={`px-4 py-2.5 rounded-full border text-sm font-semibold transition ${
         active
           ? activeClass
-          : "bg-cream border-sanddark text-inksoft"
+          : "border-sanddark text-inksoft"
       } ${disabled ? "cursor-default" : "hover:border-brandlight"}`}
     >
       {label}
