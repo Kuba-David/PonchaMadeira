@@ -275,7 +275,7 @@ export function RatingSheet({
       onClick={onClose}
     >
       <div
-        className={`${editable ? "bg-white" : "bg-cream"} w-full max-w-md rounded-t-3xl max-h-[92dvh] flex flex-col overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.2)]`}
+        className={`${editable ? "bg-cream" : "bg-white"} w-full max-w-md rounded-t-3xl max-h-[92dvh] flex flex-col overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.2)]`}
         style={{
           transform: `translateY(${dragY}px)`,
           transition: dragging ? "none" : "transform 0.26s cubic-bezier(0.32,0.72,0,1)",

@@ -77,7 +77,7 @@ export function PhotoPositionModal({
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-md bg-cream rounded-3xl overflow-hidden shadow-2xl"
+        className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative w-full overflow-hidden" style={{ height: 240 }}>

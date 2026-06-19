@@ -23,7 +23,7 @@ export function ConfirmDialog({
       onClick={onCancel}
     >
       <div
-        className="bg-cream w-full max-w-sm rounded-3xl shadow-xl p-6 flex flex-col gap-5"
+        className="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 flex flex-col gap-5"
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-center text-lg font-semibold text-ink">{title}</p>
