@@ -6,8 +6,8 @@ export const BALANCE_STEPS = 7; // oboustranné – víc úrovní pro škálová
 export const FRESHNESS_STEPS = 5;
 
 // Váhy obou sekcí (sčítají do 1).
-const BALANCE_WEIGHT = 0.7;
-const FRESHNESS_WEIGHT = 0.3;
+const BALANCE_WEIGHT = 0.6;
+const FRESHNESS_WEIGHT = 0.4;
 
 export type Sliders = {
   sourness: number;
