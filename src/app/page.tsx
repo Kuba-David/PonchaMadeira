@@ -193,7 +193,7 @@ export default function Home() {
         {/* Seznam jako překryv – hlavička scrolluje spolu s obsahem */}
         {view === "list" && (
           <div
-            className="absolute inset-0 z-10 bg-sand overflow-y-auto pb-28"
+            className="absolute inset-0 z-10 bg-cream overflow-y-auto pb-28"
             onTouchStart={handleListTouchStart}
             onTouchMove={handleListTouchMove}
             onTouchEnd={handleListTouchEnd}

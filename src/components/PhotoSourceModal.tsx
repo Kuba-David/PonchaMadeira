@@ -15,7 +15,7 @@ export function PhotoSourceModal({ onCamera, onGallery, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-sm rounded-3xl shadow-xl p-4 flex flex-col gap-4"
+        className="bg-cream w-full max-w-sm rounded-3xl shadow-xl p-4 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <button
